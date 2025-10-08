@@ -26,6 +26,7 @@
       <!-- Search and Filters -->
       <div class="mb-8">
         <div class="flex flex-col md:flex-row gap-4 mb-4">
+          <!-- Search bar -->
           <div class="relative flex-1">
             <Search class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -34,31 +35,20 @@
               class="pl-10"
             />
           </div>
-          <Select v-model="selectedCategory">
-            <SelectTrigger class="w-full md:w-48">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="category in categories"
-                :key="category"
-                :value="category"
-              >
-                {{ category === 'all' ? 'All Categories' : category }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <Select v-model="sortBy">
-            <SelectTrigger class="w-full md:w-48">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest First</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-              <SelectItem value="rating">Highest Rated</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <Select
+            v-model="selectedCategory"
+            :options="categoryOptions"
+            placeholder="Category"
+            class="w-full md:w-48"
+          />
+
+          <Select
+            v-model="sortBy"
+            :options="sortOptions"
+            placeholder="Sort by"
+            class="w-full md:w-48"
+          />
         </div>
 
         <div class="flex items-center justify-between">
@@ -103,10 +93,23 @@ const searchQuery = ref('')
 const selectedCategory = ref('all')
 const sortBy = ref('newest')
 
-// Categories
-const categories = ['all', 'Textbooks', 'Electronics', 'Equipment', 'Supplies']
+// Options for custom Select component
+const categoryOptions = [
+  { label: 'All Categories', value: 'all' },
+  { label: 'Textbooks', value: 'Textbooks' },
+  { label: 'Electronics', value: 'Electronics' },
+  { label: 'Equipment', value: 'Equipment' },
+  { label: 'Supplies', value: 'Supplies' },
+]
 
-// Mock data for items (later replace with Firebase)
+const sortOptions = [
+  { label: 'Newest First', value: 'newest' },
+  { label: 'Price: Low to High', value: 'price-low' },
+  { label: 'Price: High to Low', value: 'price-high' },
+  { label: 'Highest Rated', value: 'rating' },
+]
+
+// Mock data
 const mockItems = ref([
   {
     id: "1",
@@ -200,7 +203,7 @@ const mockItems = ref([
   },
 ])
 
-// Computed: Filter items
+// Computed filters
 const filteredItems = computed(() => {
   return mockItems.value.filter((item) => {
     const matchesSearch =
@@ -212,10 +215,9 @@ const filteredItems = computed(() => {
   })
 })
 
-// Computed: Sort items
+// Sorting
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
-  
   switch (sortBy.value) {
     case 'price-low':
       return items.sort((a, b) => a.price - b.price)
@@ -223,19 +225,16 @@ const sortedItems = computed(() => {
       return items.sort((a, b) => b.price - a.price)
     case 'rating':
       return items.sort((a, b) => b.rating - a.rating)
-    case 'newest':
     default:
       return items
   }
 })
 
-// Methods
 const clearFilters = () => {
   searchQuery.value = ''
   selectedCategory.value = 'all'
+  sortBy.value = 'newest'
 }
 </script>
 
-<style scoped>
-/* Add any custom styles here if needed */
-</style>
+<style scoped></style>

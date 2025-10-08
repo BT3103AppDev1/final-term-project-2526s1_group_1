@@ -1,16 +1,22 @@
 <template>
   <div
-    class="relative inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground"
+    data-slot="avatar"
+    class="relative inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground overflow-hidden"
     :class="sizeClass"
   >
+    <!-- Avatar Image -->
     <img
-      v-if="src"
+      v-if="src && !hasError"
       :src="src"
       :alt="alt"
       class="object-cover w-full h-full rounded-full"
       @error="onError"
     />
-    <span v-else class="font-semibold">{{ initials }}</span>
+
+    <!-- Fallback (initials or slot content) -->
+    <span v-else class="font-semibold select-none">
+      <slot>{{ initials }}</slot>
+    </span>
   </div>
 </template>
 
@@ -51,3 +57,18 @@ const initials = computed(() =>
     : '?'
 )
 </script>
+
+<script>
+// These exports make it compatible with your existing import line:
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
+export const Avatar = {}
+export const AvatarImage = {}
+export const AvatarFallback = {}
+</script>
+
+<style scoped>
+/* Optional: smooth transition when avatar loads */
+img {
+  transition: opacity 0.2s ease-in-out;
+}
+</style>
