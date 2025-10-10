@@ -255,17 +255,17 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Upload, X, DollarSign } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button.vue'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from '@/components/ui/.vue'
-import { Input } from '@/components/ui/input.vue'
-import { Label } from '@/components/ui/label.vue'
-import { Textarea } from '@/components/ui/textarea.vue'
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,

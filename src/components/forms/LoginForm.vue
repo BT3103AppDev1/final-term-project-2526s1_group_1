@@ -49,7 +49,7 @@ const errorMessage = ref('')
 const loginUser = async () => {
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value)
-    // ✅ 로그인 성공 → browse로 이동
+ 
     router.push('/browse')
   } catch (error) {
     console.error('Login failed:', error)

@@ -3,7 +3,7 @@
     <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
-        <!-- 로고 -->
+
         <router-link to="/" class="flex items-center gap-2">
           <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span class="text-primary-foreground font-bold text-sm">PS</span>
@@ -11,7 +11,7 @@
           <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
         </router-link>
 
-        <!-- 오른쪽 메뉴 -->
+
         <div class="flex items-center gap-3">
           <Button variant="outline" size="sm" as-child>
             <router-link to="/list-item">List Item</router-link>
