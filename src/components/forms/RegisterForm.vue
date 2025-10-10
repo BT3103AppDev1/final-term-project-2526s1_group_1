@@ -1,9 +1,8 @@
 <template>
   <form @submit.prevent="registerUser" class="space-y-4">
     <div>
-      <label for="register-name" class="block text-sm font-medium mb-1">Full Name</label>
+      <label class="block text-sm font-medium mb-1">Full Name</label>
       <input
-        id="register-name"
         v-model="name"
         type="text"
         placeholder="John Doe"
@@ -13,9 +12,8 @@
     </div>
 
     <div>
-      <label for="register-email" class="block text-sm font-medium mb-1">Email</label>
+      <label class="block text-sm font-medium mb-1">Email</label>
       <input
-        id="register-email"
         v-model="email"
         type="email"
         placeholder="you@example.com"
@@ -25,9 +23,8 @@
     </div>
 
     <div>
-      <label for="register-password" class="block text-sm font-medium mb-1">Password</label>
+      <label class="block text-sm font-medium mb-1">Password</label>
       <input
-        id="register-password"
         v-model="password"
         type="password"
         placeholder="••••••••"
@@ -42,33 +39,45 @@
     >
       Create Account
     </button>
+
+    <!-- 에러 메시지 -->
+    <p v-if="errorMessage" class="text-red-500 text-sm text-center mt-2">
+      {{ errorMessage }}
+    </p>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { auth } from '@/firebase/config'
 
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const errorMessage = ref('')
 const router = useRouter()
-const auth = getAuth()
 
-async function registerUser() {
+const registerUser = async () => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value)
     const user = userCredential.user
 
-    // ✅ Update Firebase user profile with display name
+    // ✅ Firebase 유저 이름 업데이트
     await updateProfile(user, { displayName: name.value })
 
-    // ✅ Redirect to browse page
+    // ✅ 회원가입 성공 → browse로 이동
     router.push('/browse')
   } catch (error) {
-    console.error('Registration failed:', error.message)
-    alert('Registration failed: ' + error.message)
+    console.error('Registration failed:', error)
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage.value = 'This email is already in use.'
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage.value = 'Password should be at least 6 characters.'
+    } else {
+      errorMessage.value = 'Registration failed. Please try again.'
+    }
   }
 }
 </script>

@@ -1,9 +1,8 @@
 <template>
   <form @submit.prevent="loginUser" class="space-y-4">
     <div>
-      <label for="login-email" class="block text-sm font-medium mb-1">Email</label>
+      <label class="block text-sm font-medium mb-1">Email</label>
       <input
-        id="login-email"
         v-model="email"
         type="email"
         placeholder="you@example.com"
@@ -13,9 +12,8 @@
     </div>
 
     <div>
-      <label for="login-password" class="block text-sm font-medium mb-1">Password</label>
+      <label class="block text-sm font-medium mb-1">Password</label>
       <input
-        id="login-password"
         v-model="password"
         type="password"
         placeholder="••••••••"
@@ -30,28 +28,36 @@
     >
       Sign In
     </button>
+
+    <p v-if="errorMessage" class="text-red-500 text-sm text-center mt-2">
+      {{ errorMessage }}
+    </p>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/firebase/config'
 import { useRouter } from 'vue-router'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 
+const router = useRouter()
 const email = ref('')
 const password = ref('')
-const router = useRouter()
-const auth = getAuth()
+const errorMessage = ref('')
 
-async function loginUser() {
+const loginUser = async () => {
   try {
     await signInWithEmailAndPassword(auth, email.value, password.value)
-
-    // ✅ Redirect to browse after successful login
+ 
     router.push('/browse')
   } catch (error) {
-    console.error('Login failed:', error.message)
-    alert('Login failed: ' + error.message)
+    console.error('Login failed:', error)
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+      errorMessage.value = 'Invalid email or password.'
+    } else {
+      errorMessage.value = 'Login failed. Please try again.'
+    }
   }
 }
 </script>

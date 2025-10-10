@@ -230,7 +230,7 @@ import {
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
 import Badge from '/src/components/ui/Badge.vue';
-import Avatar from '@/components/ui/Avatar.vue'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import Separator from '@/components/ui/Separator.vue'
 
 const route = useRoute()
