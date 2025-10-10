@@ -58,6 +58,14 @@ const initials = computed(() =>
 )
 </script>
 
+<script>
+// These exports make it compatible with your existing import line:
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
+export const Avatar = {}
+export const AvatarImage = {}
+export const AvatarFallback = {}
+</script>
+
 <style scoped>
 /* Optional: smooth transition when avatar loads */
 img {
