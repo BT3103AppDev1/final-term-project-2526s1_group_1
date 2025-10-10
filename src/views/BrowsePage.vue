@@ -1,26 +1,49 @@
 <template>
   <div class="min-h-screen bg-background">
-    <!-- Header -->
     <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <router-link to="/" class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span class="text-primary-foreground font-bold text-sm">PS</span>
-            </div>
-            <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
-          </router-link>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" as-child>
-              <router-link to="/list-item">List Item</router-link>
-            </Button>
-            <Button variant="outline" size="sm">
-              Profile
+      <div class="flex items-center justify-between">
+        <!-- 로고 -->
+        <router-link to="/" class="flex items-center gap-2">
+          <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+            <span class="text-primary-foreground font-bold text-sm">PS</span>
+          </div>
+          <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
+        </router-link>
+
+        <!-- 오른쪽 메뉴 -->
+        <div class="flex items-center gap-3">
+          <Button variant="outline" size="sm" as-child>
+            <router-link to="/list-item">List Item</router-link>
+          </Button>
+
+          <Button variant="outline" size="sm" as-child>
+            <router-link to="/profile">Profile</router-link>
+          </Button>
+
+        <template v-if="user">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-muted-foreground">
+              {{ user.email }}
+            </span>
+            <Button variant="outline" size="sm" @click="logoutUser" class="ml-2">
+              Log Out
             </Button>
           </div>
+        </template>
+
+
+
+          <template v-else>
+            <Button variant="default" size="sm" as-child>
+              <router-link to="/login">Log In</router-link>
+            </Button>
+          </template>
         </div>
-      </div>
-    </header>
+      </div>  
+    </div>
+  </header>
+
 
     <div class="container mx-auto px-4 py-6">
       <!-- Search and Filters -->
@@ -81,14 +104,32 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { auth } from '@/firebase/config'
+import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import { Search, Filter } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import Input from '@/components/ui/input.vue'
 import Select from '@/components/ui/select.vue'
 import ItemCard from '@/components/ui/ItemCard.vue'
 
-// State
+const user = ref(null)
+const router = useRouter()
+
+onMounted(() => {
+  onAuthStateChanged(auth, (currentUser) => {
+    user.value = currentUser
+  })
+})
+
+const logoutUser = async () => {
+  await signOut(auth)
+  user.value = null
+  router.push('/login')
+}
+
+
 const searchQuery = ref('')
 const selectedCategory = ref('all')
 const sortBy = ref('newest')

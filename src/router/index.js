@@ -1,13 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
+// ✅ 먼저 router 정의
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/browse'
-    },
+    { path: '/', redirect: '/browse' },
     {
       path: '/login',
       name: 'login',
@@ -71,7 +70,6 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminPage.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
-    // 404 Not Found
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -80,32 +78,33 @@ const router = createRouter({
   ]
 })
 
-// Navigation guard for protected routes
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
-  const currentUser = auth.currentUser
+// ✅ 비동기 인증 확인용 guard (단 하나만)
+let isAuthReady = false
 
-  // Check if route requires authentication
-  if (requiresAuth && !currentUser) {
-    // Redirect to login page
-    next({
-      path: '/login',
-      query: { redirect: to.fullPath } // Save the location to redirect after login
+router.beforeEach((to, from, next) => {
+  if (!isAuthReady) {
+    onAuthStateChanged(auth, (user) => {
+      isAuthReady = true
+      proceedNavigation(to, from, next, user)
     })
-  } 
-  // Check if route requires admin access
-  else if (requiresAdmin && !currentUser?.isAdmin) {
-    // Redirect to home if not admin
-    next('/browse')
-  } 
-  // Redirect to browse if logged in user tries to access login page
-  else if (to.path === '/login' && currentUser) {
-    next('/browse')
-  } 
-  else {
-    next()
+  } else {
+    proceedNavigation(to, from, next, auth.currentUser)
   }
 })
+
+function proceedNavigation(to, from, next, user) {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+
+  if (requiresAuth && !user) {
+    next({ path: '/login', query: { redirect: to.fullPath } })
+  } else if (requiresAdmin && !user?.isAdmin) {
+    next('/browse')
+  } else if (to.path === '/login' && user) {
+    next('/browse')
+  } else {
+    next()
+  }
+}
 
 export default router

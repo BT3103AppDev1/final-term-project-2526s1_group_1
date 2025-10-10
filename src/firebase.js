@@ -25,3 +25,4 @@ const storage = getStorage(app);
 
 // Export the services so you can use them in your app
 export { auth, db, storage };
+
