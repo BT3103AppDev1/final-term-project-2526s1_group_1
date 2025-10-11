@@ -6,7 +6,12 @@ import { auth } from '@/firebase/config'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: '/browse' },
+    { 
+      path: '/', 
+      name: 'landing',
+      component: () => import('@/views/LandingPage.vue'),
+      meta: { requiresAuth: false }
+    },
     {
       path: '/login',
       name: 'login',

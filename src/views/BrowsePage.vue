@@ -1,9 +1,8 @@
 <template>
-  <div class="min-h-screen bg-background">
-    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+  <div class="min-h-screen bg-background w-full">
+    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 w-full">
       <div class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
-
         <router-link to="/" class="flex items-center gap-2">
           <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <span class="text-primary-foreground font-bold text-sm">PS</span>
@@ -84,7 +83,7 @@
       </div>
 
       <!-- Items Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <ItemCard
           v-for="item in sortedItems"
           :key="item.id"
