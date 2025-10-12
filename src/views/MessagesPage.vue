@@ -208,11 +208,11 @@
 <script setup>
 import { ref, computed, nextTick } from 'vue'
 import { Send, Search, MoreVertical, Phone, Video, Info } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
+import Button from '@/components/ui/button.vue'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
+import Input from '@/components/ui/input.vue'
+import Avatar from '@/components/ui/Avatar.vue'
+import Separator from '@/components/ui/Separator.vue'
 
 // State
 const selectedConversation = ref(null)

@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/firebase/config'
@@ -47,6 +46,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/profile/settings',
+      name: 'profile-settings',
+      component: () => import('@/views/ProfileSettingsPage.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/profile/:id',
       name: 'user-profile',
       component: () => import('@/views/ProfilePage.vue')
@@ -82,8 +87,7 @@ const router = createRouter({
     }
   ]
 })
-
-/* Firebase Auth Guard */
+  // Firebase Authentication Guard
 let isAuthReady = false
 
 router.beforeEach((to, from, next) => {
@@ -101,13 +105,19 @@ function proceedNavigation(to, from, next, user) {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
 
+  //redirect unauthenticated users to landing page
   if (requiresAuth && !user) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
-  } else if (requiresAdmin && !user?.isAdmin) {
+    next('/')  
+  } 
+  //redirect non-admin users away from admin page
+  else if (requiresAdmin && !user?.isAdmin) {
     next('/browse')
-  } else if (to.path === '/login' && user) {
+  } 
+  // prevent logged-in users from accessing login page again
+  else if (to.path === '/login' && user) {
     next('/browse')
-  } else {
+  } 
+  else {
     next()
   }
 }

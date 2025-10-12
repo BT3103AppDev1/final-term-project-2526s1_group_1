@@ -39,9 +39,10 @@
 
 <script setup>
 import { Star } from 'lucide-vue-next'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import Card from '@/components/ui/Card.vue'
+import CardContent from '@/components/ui/CardContent.vue'
+import Badge from '@/components/ui/badge.vue'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
 const props = defineProps({
   review: {

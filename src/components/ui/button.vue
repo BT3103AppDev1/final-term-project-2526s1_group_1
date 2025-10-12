@@ -64,5 +64,4 @@ const computedClass = computed(() => {
 </script>
 
 <style scoped>
-/* You can override button color variables via Tailwind theme */
 </style>

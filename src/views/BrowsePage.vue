@@ -2,47 +2,50 @@
   <div class="min-h-screen bg-background w-full">
     <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50 w-full">
       <div class="container mx-auto px-4 py-4">
-      <div class="flex items-center justify-between">
-        <router-link to="/" class="flex items-center gap-2">
-          <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span class="text-primary-foreground font-bold text-sm">PS</span>
-          </div>
-          <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
-        </router-link>
+        <div class="flex items-center justify-between">
+          <router-link to="/" class="flex items-center gap-2">
+            <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+              <span class="text-primary-foreground font-bold text-sm">PS</span>
+            </div>
+            <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
+          </router-link>
 
-
-        <div class="flex items-center gap-3">
-          <Button variant="outline" size="sm" as-child>
-            <router-link to="/list-item">List Item</router-link>
-          </Button>
-
-          <Button variant="outline" size="sm" as-child>
-            <router-link to="/profile">Profile</router-link>
-          </Button>
-
-        <template v-if="user">
           <div class="flex items-center gap-3">
-            <span class="text-sm text-muted-foreground">
-              {{ user.email }}
-            </span>
-            <Button variant="outline" size="sm" @click="logoutUser" class="ml-2">
-              Log Out
+            <Button variant="outline" size="sm" as-child>
+              <router-link to="/list-item">List Item</router-link>
             </Button>
+
+            <Button variant="outline" size="sm" as-child>
+              <router-link to="/profile">Profile</router-link>
+            </Button>
+
+            <!-- Logged-in user -->
+            <template v-if="user">
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-muted-foreground">{{ user.email }}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  @click="logoutUser"
+                  class="ml-2"
+                  :disabled="isLoggingOut"
+                >
+                  <span v-if="!isLoggingOut">Log Out</span>
+                  <span v-else>Logging out...</span>
+                </Button>
+              </div>
+            </template>
+
+            <!-- Guest user -->
+            <template v-else>
+              <Button variant="default" size="sm" as-child>
+                <router-link to="/login">Log In</router-link>
+              </Button>
+            </template>
           </div>
-        </template>
-
-
-
-          <template v-else>
-            <Button variant="default" size="sm" as-child>
-              <router-link to="/login">Log In</router-link>
-            </Button>
-          </template>
         </div>
-      </div>  
-    </div>
-  </header>
-
+      </div>
+    </header>
 
     <div class="container mx-auto px-4 py-6">
       <!-- Search and Filters -->
@@ -103,18 +106,19 @@
 </template>
 
 <script setup>
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/firebase/config'
-import { useRouter } from 'vue-router'
 import { ref, computed, onMounted } from 'vue'
+import { useLogout } from '@/composables/useLogout'
 import { Search, Filter } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import Input from '@/components/ui/input.vue'
 import Select from '@/components/ui/select.vue'
 import ItemCard from '@/components/ui/ItemCard.vue'
 
+//Auth state and logout handling
 const user = ref(null)
-const router = useRouter()
+const { logoutUser, isLoggingOut } = useLogout()
 
 onMounted(() => {
   onAuthStateChanged(auth, (currentUser) => {
@@ -122,18 +126,11 @@ onMounted(() => {
   })
 })
 
-const logoutUser = async () => {
-  await signOut(auth)
-  user.value = null
-  router.push('/login')
-}
-
-
+//Filtering and sorting
 const searchQuery = ref('')
 const selectedCategory = ref('all')
 const sortBy = ref('newest')
 
-// Options for custom Select component
 const categoryOptions = [
   { label: 'All Categories', value: 'all' },
   { label: 'Textbooks', value: 'Textbooks' },
@@ -243,7 +240,6 @@ const mockItems = ref([
   },
 ])
 
-// Computed filters
 const filteredItems = computed(() => {
   return mockItems.value.filter((item) => {
     const matchesSearch =
@@ -255,7 +251,6 @@ const filteredItems = computed(() => {
   })
 })
 
-// Sorting
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
   switch (sortBy.value) {

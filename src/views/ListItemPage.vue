@@ -255,26 +255,20 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Upload, X, DollarSign } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
+import Button from '@/components/ui/button.vue'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { useListings } from '@/composables/useListings'
+} from '@/components/ui/Card.vue'
+import Input from '@/components/ui/input.vue'
+import Label from '@/components/ui/Label.vue'
+import Textarea from '@/components/ui/Textarea.vue'
+import Select from '@/components/ui/select.vue'
+import Badge from '@/components/ui/badge.vue'
+import { useListings } from '@/composables/useListing.js'
 
 const router = useRouter()
 const { createListing, loading } = useListings()
