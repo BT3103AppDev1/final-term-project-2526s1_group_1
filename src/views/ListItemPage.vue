@@ -256,13 +256,18 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Upload, X, DollarSign } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/Card.vue'
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle
+// } from '@/components/ui/Card.vue'
+import Card from '@/components/ui/Card.vue'
+import CardHeader from '@/components/ui/CardHeader.vue'
+import CardContent from '@/components/ui/CardContent.vue'
+import CardTitle from '@/components/ui/CardTitle.vue'
+
 import Input from '@/components/ui/input.vue'
 import Label from '@/components/ui/Label.vue'
 import Textarea from '@/components/ui/TextArea.vue' //-> be aware of case sensitivity, always pascal pls -mingu
