@@ -265,7 +265,7 @@ import {
 } from '@/components/ui/Card.vue'
 import Input from '@/components/ui/input.vue'
 import Label from '@/components/ui/Label.vue'
-import Textarea from '@/components/ui/Textarea.vue'
+import Textarea from '@/components/ui/TextArea.vue' //-> be aware of case sensitivity, always pascal pls -mingu
 import Select from '@/components/ui/select.vue'
 import Badge from '@/components/ui/badge.vue'
 import { useListings } from '@/composables/useListing.js'

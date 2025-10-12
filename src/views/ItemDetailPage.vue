@@ -228,7 +228,12 @@ import {
   ArrowLeft
 } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
+//import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
+import Card from '@/components/ui/Card.vue'
+import CardHeader from '@/components/ui/CardHeader.vue'
+import CardContent from '@/components/ui/CardContent.vue'
+import CardTitle from '@/components/ui/CardTitle.vue'
+
 import Badge from '/src/components/ui/Badge.vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import Separator from '@/components/ui/Separator.vue'
