@@ -74,7 +74,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from '@/components/ui/button.vue'
 import Input from '@/components/ui/input.vue'
-import { Card, CardContent } from '@/components/ui/Card.vue'
+import Card from '@/components/ui/Card.vue'
+import CardContent from '@/components/ui/CardContent.vue'
 
 // Firebase (optional integration later)
 import { auth, db, storage } from '@/firebase/config'
