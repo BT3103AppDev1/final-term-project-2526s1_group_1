@@ -1,13 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { onAuthStateChanged } from 'firebase/auth'
 import { auth } from '@/firebase/config'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { 
-      path: '/', 
-      name: 'landing',
+    {
+      path: '/',
+      name: 'home',
       component: () => import('@/views/LandingPage.vue'),
       meta: { requiresAuth: false }
     },
@@ -18,9 +17,36 @@ const router = createRouter({
       meta: { requiresAuth: false }
     },
     {
+      path: '/auth/:view?',
+      name: 'auth',
+      component: () => import('@/views/AuthView.vue'),
+      meta: { requiresAuth: false },
+      props: route => ({ defaultView: route.params.view || 'login' })
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/AuthView.vue'),
+      meta: { requiresAuth: false },
+      props: { defaultView: 'register' }
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/AuthView.vue'),
+      meta: { requiresAuth: false },
+      props: { defaultView: 'reset' }
+    },
+    {
       path: '/browse',
       name: 'browse',
       component: () => import('@/views/BrowsePage.vue')
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('@/views/BrowsePage.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/item/:id',
@@ -43,12 +69,6 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/ProfilePage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/profile/settings',
-      name: 'profile-settings',
-      component: () => import('@/views/ProfileSettingsPage.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -80,6 +100,7 @@ const router = createRouter({
       component: () => import('@/views/admin/AdminPage.vue'),
       meta: { requiresAuth: true, requiresAdmin: true }
     },
+    // 404 Not Found
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
@@ -87,39 +108,33 @@ const router = createRouter({
     }
   ]
 })
-  // Firebase Authentication Guard
-let isAuthReady = false
 
+// Navigation guard for protected routes
 router.beforeEach((to, from, next) => {
-  if (!isAuthReady) {
-    onAuthStateChanged(auth, (user) => {
-      isAuthReady = true
-      proceedNavigation(to, from, next, user)
-    })
-  } else {
-    proceedNavigation(to, from, next, auth.currentUser)
-  }
-})
-
-function proceedNavigation(to, from, next, user) {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+  const currentUser = auth.currentUser
 
-  //redirect unauthenticated users to landing page
-  if (requiresAuth && !user) {
-    next('/')  
+  // Check if route requires authentication
+  if (requiresAuth && !currentUser) {
+    // Redirect to auth page
+    next({
+      path: '/auth/login',
+      query: { redirect: to.fullPath } // Save the location to redirect after login
+    })
   } 
-  //redirect non-admin users away from admin page
-  else if (requiresAdmin && !user?.isAdmin) {
+  // Check if route requires admin access
+  else if (requiresAdmin && !currentUser?.isAdmin) {
+    // Redirect to home if not admin
     next('/browse')
   } 
-  // prevent logged-in users from accessing login page again
-  else if (to.path === '/login' && user) {
+  // Redirect to browse if logged in user tries to access login/auth pages
+  else if ((to.path === '/login' || to.path.startsWith('/auth')) && currentUser) {
     next('/browse')
   } 
   else {
     next()
   }
-}
+})
 
 export default router

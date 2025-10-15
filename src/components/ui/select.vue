@@ -4,48 +4,52 @@
     <button
       ref="triggerRef"
       type="button"
-      class="flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm transition hover:bg-accent/20 focus:outline-none focus:ring-2 focus:ring-ring"
+      class="flex w-full items-center justify-between rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      :class="{ 'border-blue-500 ring-2 ring-blue-200': open }"
       @click="toggleDropdown"
     >
-      <span>{{ selectedLabel || placeholder }}</span>
+      <span :class="{ 'text-slate-400': !selectedLabel }">{{ selectedLabel || placeholder }}</span>
       <ChevronDown
-        class="h-4 w-4 text-muted-foreground transition-transform"
-        :class="{ 'rotate-180': open }"
+        class="h-5 w-5 text-slate-500 transition-transform duration-200"
+        :class="{ 'rotate-180 text-blue-500': open }"
       />
     </button>
 
-    <!-- Dropdown -->
-    <transition
-      enter-active-class="transition duration-150 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-100 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <ul
-        v-if="open"
-        ref="dropdownRef"
-        class="absolute z-50 mt-2 max-h-60 w-full overflow-auto rounded-md border border-border bg-card shadow-md focus:outline-none"
+    <!-- Dropdown (Teleported to body to fix z-index/overflow issues) -->
+    <Teleport to="body">
+      <transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0 scale-95"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-95"
       >
-        <li
-          v-for="option in options"
-          :key="option.value || option"
-          class="cursor-pointer select-none px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition"
-          :class="{ 'bg-accent text-accent-foreground': modelValue === (option.value || option) }"
-          @click="selectOption(option)"
+        <ul
+          v-if="open"
+          ref="dropdownRef"
+          class="fixed z-[999999] max-h-60 w-[var(--dropdown-width)] overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-2xl focus:outline-none"
+          :style="dropdownStyle"
         >
-          {{ option.label || option }}
-        </li>
-      </ul>
-    </transition>
+          <li
+            v-for="option in options"
+            :key="option.value || option"
+            class="cursor-pointer select-none px-4 py-3 text-sm font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-all duration-150 border-b border-slate-100 last:border-b-0"
+            :class="{ 'bg-blue-100 text-blue-800 font-semibold': modelValue === (option.value || option) }"
+            @click="selectOption(option)"
+          >
+            {{ option.label || option }}
+          </li>
+        </ul>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
-import { onClickOutside } from '@vueuse/core' // npm install @vueuse/core
+import { onClickOutside } from '@vueuse/core'
 
 const props = defineProps({
   modelValue: [String, Number],
@@ -60,39 +64,82 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-
 const open = ref(false)
 const triggerRef = ref(null)
 const dropdownRef = ref(null)
 
+const dropdownStyle = ref({
+  top: '0px',
+  left: '0px',
+  '--dropdown-width': '100%',
+})
 const selectedLabel = computed(() => {
   const found = props.options.find(opt => (opt.value || opt) === props.modelValue)
   return found ? found.label || found : ''
 })
 
+function updateDropdownPosition() {
+  if (!triggerRef.value) return
+  nextTick(() => {
+    const rect = triggerRef.value.getBoundingClientRect()
+    const viewportHeight = window.innerHeight
+    const spaceBelow = viewportHeight - rect.bottom
+    const spaceAbove = rect.top
+
+    const dropdownHeight = 240 // ~max-h-60
+    const openUpward = spaceBelow < dropdownHeight && spaceAbove > spaceBelow
+
+    dropdownStyle.value = {
+      position: 'fixed',
+      left: `${rect.left}px`,
+      top: openUpward ? `${rect.top - Math.min(dropdownHeight, spaceAbove)}px` : `${rect.bottom + 4}px`,
+      '--dropdown-width': `${rect.width}px`,
+    }
+  })
+}
+
 function toggleDropdown() {
   open.value = !open.value
+  if (open.value) updateDropdownPosition()
+}
+
+function closeDropdown() {
+  open.value = false
 }
 
 function selectOption(option) {
   emit('update:modelValue', option.value || option)
-  open.value = false
+  closeDropdown()
 }
 
-// Close dropdown when clicking outside
-onClickOutside(triggerRef, () => (open.value = false))
-onClickOutside(dropdownRef, () => (open.value = false))
+// Close dropdown when clicking outside both button and dropdown
+onClickOutside(triggerRef, closeDropdown)
+onClickOutside(dropdownRef, closeDropdown)
 
-// Close dropdown with Escape key
+// Close with Escape key
 function handleEscape(e) {
-  if (e.key === 'Escape') open.value = false
+  if (e.key === 'Escape') closeDropdown()
 }
-onMounted(() => window.addEventListener('keydown', handleEscape))
-onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
+
+// Recalculate on scroll/resize
+function handleReposition() {
+  if (open.value) updateDropdownPosition()
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleEscape)
+  window.addEventListener('scroll', handleReposition, true)
+  window.addEventListener('resize', handleReposition)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleEscape)
+  window.removeEventListener('scroll', handleReposition, true)
+  window.removeEventListener('resize', handleReposition)
+})
 </script>
 
 <style scoped>
-/* Smooth dropdown */
 ul::-webkit-scrollbar {
   width: 6px;
 }

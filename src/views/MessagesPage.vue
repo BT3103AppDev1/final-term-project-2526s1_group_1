@@ -1,89 +1,121 @@
 <template>
-  <div class="min-h-screen bg-background">
-    <!-- Header -->
-    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <!-- Enhanced Header -->
+    <header class="border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
       <div class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
-          <router-link to="/browse" class="flex items-center gap-2">
-            <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span class="text-primary-foreground font-bold text-sm">PS</span>
+          <div class="flex items-center gap-4">
+            <router-link to="/browse" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <span class="text-white font-bold text-sm">PS</span>
+              </div>
+              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PeerSwap</h1>
+            </router-link>
+            <!-- Breadcrumb -->
+            <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">
+              <span>/</span>
+              <span class="text-slate-700 font-medium">Messages</span>
             </div>
-            <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
-          </router-link>
-          <div class="flex items-center gap-2">
-            <Button variant="outline" size="sm" as-child>
-              <router-link to="/rentals">Rentals</router-link>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <Button variant="outline" size="sm" as-child class="hidden sm:inline-flex">
+              <router-link to="/rentals" class="flex items-center gap-2">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Rentals
+              </router-link>
             </Button>
             <Button variant="outline" size="sm" as-child>
-              <router-link to="/profile">Profile</router-link>
+              <router-link to="/profile" class="flex items-center gap-2">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                <span class="hidden sm:inline">Profile</span>
+              </router-link>
             </Button>
           </div>
         </div>
       </div>
     </header>
 
+    <!-- Enhanced Messages Layout -->
     <div class="container mx-auto px-4 py-6 h-[calc(100vh-88px)]">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-        <!-- Conversations List -->
+        
+        <!-- Enhanced Conversations List -->
         <div class="lg:col-span-1">
-          <Card class="h-full flex flex-col">
-            <CardHeader class="pb-4">
-              <CardTitle>Messages</CardTitle>
+          <Card class="h-full flex flex-col border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-30"></div>
+            <CardHeader class="pb-4 relative">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                  </svg>
+                </div>
+                <CardTitle class="text-slate-900">Messages</CardTitle>
+              </div>
+              
               <div class="relative">
-                <Search class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search class="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   v-model="searchQuery"
                   placeholder="Search conversations..."
-                  class="pl-10"
+                  class="pl-10 bg-white/60 border-slate-200 focus:border-blue-400 focus:ring-blue-400"
                 />
               </div>
             </CardHeader>
-            <CardContent class="flex-1 p-0 overflow-y-auto">
+            
+            <CardContent class="flex-1 p-0 overflow-y-auto relative">
               <div class="space-y-1">
                 <div
                   v-for="conversation in filteredConversations"
                   :key="conversation.id"
                   :class="[
-                    'p-4 cursor-pointer hover:bg-muted/50 transition-colors',
-                    selectedConversation?.id === conversation.id ? 'bg-muted' : ''
+                    'p-4 cursor-pointer transition-all duration-200 mx-2 rounded-xl hover:shadow-md',
+                    selectedConversation?.id === conversation.id 
+                      ? 'bg-gradient-to-r from-blue-100 to-purple-100 shadow-md border-2 border-blue-200' 
+                      : 'hover:bg-white/60'
                   ]"
                   @click="selectConversation(conversation)"
                 >
                   <div class="flex items-start gap-3">
                     <div class="relative">
-                      <Avatar class="h-10 w-10">
+                      <Avatar class="h-12 w-12 ring-2 ring-white shadow-sm">
                         <AvatarImage :src="conversation.user.avatar" />
-                        <AvatarFallback>
+                        <AvatarFallback class="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                           {{ getInitials(conversation.user.name) }}
                         </AvatarFallback>
                       </Avatar>
                       <div
                         v-if="conversation.user.online"
-                        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-background rounded-full"
+                        class="absolute -bottom-0.5 -right-0.5 h-4 w-4 bg-green-500 border-2 border-white rounded-full shadow-sm"
                       />
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center justify-between mb-1">
-                        <h4 class="font-semibold text-sm truncate">{{ conversation.user.name }}</h4>
-                        <span class="text-xs text-muted-foreground">
+                        <h4 class="font-semibold text-slate-900 truncate">{{ conversation.user.name }}</h4>
+                        <span class="text-xs text-slate-500 font-medium">
                           {{ conversation.lastMessage.timestamp }}
                         </span>
                       </div>
-                      <p class="text-xs text-muted-foreground mb-1 truncate">{{ conversation.item }}</p>
+                      <p class="text-xs text-blue-600 font-medium mb-2 truncate">{{ conversation.item }}</p>
                       <div class="flex items-center justify-between">
                         <p
                           :class="[
                             'text-sm truncate',
                             conversation.lastMessage.unread
-                              ? 'font-semibold text-foreground'
-                              : 'text-muted-foreground'
+                              ? 'font-semibold text-slate-900'
+                              : 'text-slate-600'
                           ]"
                         >
                           {{ conversation.lastMessage.text }}
                         </p>
                         <div
                           v-if="conversation.lastMessage.unread"
-                          class="h-2 w-2 bg-primary rounded-full ml-2 shrink-0"
+                          class="h-2.5 w-2.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full ml-2 shrink-0 shadow-sm"
                         />
                       </div>
                     </div>
@@ -94,109 +126,125 @@
           </Card>
         </div>
 
-        <!-- Chat Area -->
+        <!-- Enhanced Chat Area -->
         <div class="lg:col-span-2">
-          <Card v-if="selectedConversation" class="h-full flex flex-col">
-            <!-- Chat Header -->
-            <CardHeader class="pb-4">
+          <Card v-if="selectedConversation" class="h-full flex flex-col border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-blue-50 opacity-30"></div>
+            
+            <!-- Enhanced Chat Header -->
+            <CardHeader class="pb-4 relative border-b border-slate-200">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="relative">
-                    <Avatar class="h-10 w-10">
+                    <Avatar class="h-12 w-12 ring-2 ring-white shadow-lg">
                       <AvatarImage :src="selectedConversation.user.avatar" />
-                      <AvatarFallback>
+                      <AvatarFallback class="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
                         {{ getInitials(selectedConversation.user.name) }}
                       </AvatarFallback>
                     </Avatar>
                     <div
                       v-if="selectedConversation.user.online"
-                      class="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-background rounded-full"
+                      class="absolute -bottom-0.5 -right-0.5 h-4 w-4 bg-green-500 border-2 border-white rounded-full shadow-sm"
                     />
                   </div>
                   <div>
-                    <h3 class="font-semibold">{{ selectedConversation.user.name }}</h3>
-                    <p class="text-sm text-muted-foreground">{{ selectedConversation.item }}</p>
+                    <h3 class="font-bold text-slate-900">{{ selectedConversation.user.name }}</h3>
+                    <p class="text-sm text-blue-600 font-medium">{{ selectedConversation.item }}</p>
+                    <p v-if="selectedConversation.user.online" class="text-xs text-green-600 font-medium">Online now</p>
+                    <p v-else class="text-xs text-slate-500">Last seen recently</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" class="hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors">
                     <Phone class="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" class="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors">
                     <Video class="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors">
                     <Info class="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" class="hover:bg-slate-50 hover:border-slate-300 transition-colors">
                     <MoreVertical class="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
 
-            <Separator />
-
-            <!-- Messages -->
-            <CardContent ref="messagesContainer" class="flex-1 p-4 overflow-y-auto">
-              <div class="space-y-4">
+            <!-- Enhanced Messages -->
+            <CardContent ref="messagesContainer" class="flex-1 p-6 overflow-y-auto relative space-y-4">
+              <div class="space-y-6">
                 <div
                   v-for="message in messages"
                   :key="message.id"
                   :class="['flex', message.isMe ? 'justify-end' : 'justify-start']"
                 >
-                  <div :class="['max-w-[70%]', message.isMe ? 'order-2' : 'order-1']">
-                    <div
-                      :class="[
-                        'p-3 rounded-lg',
-                        message.isMe
-                          ? 'bg-primary text-primary-foreground ml-auto'
-                          : 'bg-muted text-foreground'
-                      ]"
-                    >
-                      <p class="text-sm">{{ message.text }}</p>
+                  <div :class="['max-w-[75%] flex gap-3', message.isMe ? 'flex-row-reverse' : 'flex-row']">
+                    <Avatar v-if="!message.isMe" class="h-8 w-8 ring-1 ring-slate-200 shadow-sm">
+                      <AvatarImage :src="selectedConversation.user.avatar" />
+                      <AvatarFallback class="text-xs bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                        {{ getInitials(selectedConversation.user.name) }}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div :class="['flex flex-col', message.isMe ? 'items-end' : 'items-start']">
+                      <div
+                        :class="[
+                          'px-4 py-3 rounded-2xl shadow-sm max-w-full break-words',
+                          message.isMe
+                            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-md'
+                            : 'bg-white text-slate-900 border border-slate-200 rounded-bl-md'
+                        ]"
+                      >
+                        <p class="text-sm leading-relaxed">{{ message.text }}</p>
+                      </div>
+                      <p
+                        :class="[
+                          'text-xs text-slate-500 mt-1 px-1',
+                          message.isMe ? 'text-right' : 'text-left'
+                        ]"
+                      >
+                        {{ message.timestamp }}
+                      </p>
                     </div>
-                    <p
-                      :class="[
-                        'text-xs text-muted-foreground mt-1',
-                        message.isMe ? 'text-right' : 'text-left'
-                      ]"
-                    >
-                      {{ message.timestamp }}
-                    </p>
                   </div>
-                  <Avatar v-if="!message.isMe" class="h-8 w-8 order-1 mr-2 mt-1">
-                    <AvatarImage :src="selectedConversation.user.avatar" />
-                    <AvatarFallback class="text-xs">
-                      {{ getInitials(selectedConversation.user.name) }}
-                    </AvatarFallback>
-                  </Avatar>
                 </div>
               </div>
             </CardContent>
 
-            <Separator />
-
-            <!-- Message Input -->
-            <div class="p-4">
-              <div class="flex gap-2">
-                <Input
-                  v-model="newMessage"
-                  placeholder="Type a message..."
-                  class="flex-1"
-                  @keypress.enter="handleSendMessage"
-                />
-                <Button @click="handleSendMessage" :disabled="!newMessage.trim()">
+            <!-- Enhanced Message Input -->
+            <div class="p-4 border-t border-slate-200 bg-white/60 relative">
+              <div class="flex gap-3 items-end">
+                <div class="flex-1">
+                  <Input
+                    v-model="newMessage"
+                    placeholder="Type your message..."
+                    class="bg-white border-slate-300 focus:border-blue-400 focus:ring-blue-400 rounded-xl px-4 py-3 text-sm resize-none"
+                    @keypress.enter="handleSendMessage"
+                  />
+                </div>
+                <Button 
+                  @click="handleSendMessage" 
+                  :disabled="!newMessage.trim()"
+                  class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg rounded-xl px-4 py-3"
+                >
                   <Send class="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </Card>
 
-          <!-- No conversation selected -->
-          <Card v-else class="h-full flex items-center justify-center">
-            <CardContent class="text-center">
-              <p class="text-muted-foreground">Select a conversation to start messaging</p>
+          <!-- Enhanced Empty State -->
+          <Card v-else class="h-full flex items-center justify-center border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-blue-50 opacity-50"></div>
+            <CardContent class="text-center relative">
+              <div class="h-24 w-24 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 mx-auto mb-6 flex items-center justify-center">
+                <svg class="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-slate-900 mb-3">Select a Conversation</h3>
+              <p class="text-slate-600 max-w-sm">Choose a conversation from the sidebar to start messaging with other users about their items.</p>
             </CardContent>
           </Card>
         </div>
@@ -211,8 +259,7 @@ import { Send, Search, MoreVertical, Phone, Video, Info } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
 import Input from '@/components/ui/input.vue'
-import Avatar from '@/components/ui/Avatar.vue'
-import Separator from '@/components/ui/Separator.vue'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
 // State
 const selectedConversation = ref(null)
@@ -259,62 +306,71 @@ const mockConversations = ref([
       online: true,
     },
     lastMessage: {
-      text: "The MacBook is ready for pickup. Let me know when you're coming.",
+      text: "Perfect! The laptop works great. Thanks again!",
       timestamp: "3 hours ago",
       unread: false,
     },
-    item: 'MacBook Pro 13" (2021)',
+    item: "MacBook Pro 13-inch",
+  },
+  {
+    id: "conv-4",
+    user: {
+      name: "Sarah Chen",
+      avatar: "/placeholder.svg?key=sarah-msg",
+      online: false,
+    },
+    lastMessage: {
+      text: "I'm interested in renting your camera for the weekend",
+      timestamp: "1 day ago",
+      unread: true,
+    },
+    item: "Canon EOS R Camera",
+  },
+  {
+    id: "conv-5",
+    user: {
+      name: "David Kim",
+      avatar: "/placeholder.svg?key=david-msg",
+      online: true,
+    },
+    lastMessage: {
+      text: "Great condition! Would you consider $20 for 2 weeks?",
+      timestamp: "2 days ago",
+      unread: false,
+    },
+    item: "Wireless Headphones",
   },
 ])
 
-// Mock messages for active conversation
+// Mock messages for selected conversation
 const mockMessages = {
   "conv-1": [
     {
       id: "msg-1",
-      sender: "Alex Rodriguez",
-      text: "Hi! I'm interested in renting your Calculus textbook. Is it still available?",
-      timestamp: "Yesterday 3:45 PM",
+      text: "Hi! I'm interested in renting your Calculus textbook.",
+      timestamp: "Yesterday 10:30 AM",
       isMe: false,
     },
     {
       id: "msg-2",
-      sender: "You",
-      text: "Yes, it's available! When would you need it?",
-      timestamp: "Yesterday 4:12 PM",
+      text: "Sure! It's available. When would you need it?",
+      timestamp: "Yesterday 10:45 AM",
       isMe: true,
     },
     {
       id: "msg-3",
-      sender: "Alex Rodriguez",
-      text: "I need it starting Monday for about a week. Would that work?",
-      timestamp: "Yesterday 4:15 PM",
+      text: "I need it for next week. Is $15/week okay?",
+      timestamp: "Yesterday 11:00 AM",
       isMe: false,
     },
     {
       id: "msg-4",
-      sender: "You",
-      text: "Perfect! That works for me. The rental is $15 for the week plus a $50 security deposit. We can meet at the Campus North library.",
-      timestamp: "Yesterday 4:20 PM",
+      text: "That works! You can pick it up tomorrow at 2 PM.",
+      timestamp: "Yesterday 11:15 AM",
       isMe: true,
     },
     {
       id: "msg-5",
-      sender: "Alex Rodriguez",
-      text: "Sounds great! I'll send the rental request through the app. What time works best for pickup?",
-      timestamp: "Today 10:30 AM",
-      isMe: false,
-    },
-    {
-      id: "msg-6",
-      sender: "You",
-      text: "I'm free tomorrow (Tuesday) between 2-4 PM. Does 2 PM work for you?",
-      timestamp: "Today 11:15 AM",
-      isMe: true,
-    },
-    {
-      id: "msg-7",
-      sender: "Alex Rodriguez",
       text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
       timestamp: "2 min ago",
       isMe: false,
@@ -322,8 +378,7 @@ const mockMessages = {
   ],
   "conv-2": [
     {
-      id: "msg-8",
-      sender: "Emma Davis",
+      id: "msg-6",
       text: "Is the textbook still available for next week?",
       timestamp: "1 hour ago",
       isMe: false,
@@ -331,9 +386,14 @@ const mockMessages = {
   ],
   "conv-3": [
     {
-      id: "msg-9",
-      sender: "Mike Johnson",
-      text: "The MacBook is ready for pickup. Let me know when you're coming.",
+      id: "msg-7",
+      text: "How's the laptop working out?",
+      timestamp: "3 hours ago",
+      isMe: true,
+    },
+    {
+      id: "msg-8",
+      text: "Perfect! The laptop works great. Thanks again!",
       timestamp: "3 hours ago",
       isMe: false,
     },
@@ -342,19 +402,24 @@ const mockMessages = {
 
 // Computed
 const filteredConversations = computed(() => {
-  return mockConversations.value.filter(
-    (conv) =>
-      conv.user.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      conv.item.toLowerCase().includes(searchQuery.value.toLowerCase())
+  if (!searchQuery.value) return mockConversations.value
+  
+  const query = searchQuery.value.toLowerCase()
+  return mockConversations.value.filter(conv => 
+    conv.user.name.toLowerCase().includes(query) ||
+    conv.item.toLowerCase().includes(query) ||
+    conv.lastMessage.text.toLowerCase().includes(query)
   )
 })
 
 // Methods
 const getInitials = (name) => {
+  if (!name) return '?'
   return name
     .split(' ')
     .map(n => n[0])
     .join('')
+    .toUpperCase()
 }
 
 const selectConversation = (conversation) => {
@@ -366,58 +431,46 @@ const selectConversation = (conversation) => {
   
   // Scroll to bottom
   nextTick(() => {
-    scrollToBottom()
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
   })
-}
-
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
 }
 
 const handleSendMessage = () => {
   if (!newMessage.value.trim() || !selectedConversation.value) return
-
-  const newMsg = {
+  
+  const message = {
     id: `msg-${Date.now()}`,
-    sender: 'You',
-    text: newMessage.value,
-    timestamp: 'Just now',
+    text: newMessage.value.trim(),
+    timestamp: "Just now",
     isMe: true,
   }
-
-  messages.value.push(newMsg)
+  
+  messages.value.push(message)
   
   // Update last message in conversation
   selectedConversation.value.lastMessage = {
-    text: newMessage.value,
-    timestamp: 'Just now',
+    text: message.text,
+    timestamp: message.timestamp,
     unread: false,
   }
-
-  console.log('Sending message:', newMessage.value)
   
-  // In real app: Send to Firebase
-  // await sendMessage(selectedConversation.value.id, newMessage.value)
-
   newMessage.value = ''
   
+  // Scroll to bottom
   nextTick(() => {
-    scrollToBottom()
+    if (messagesContainer.value) {
+      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    }
   })
-}
-
-// Initialize with first conversation selected
-if (mockConversations.value.length > 0) {
-  selectConversation(mockConversations.value[0])
 }
 </script>
 
 <style scoped>
-/* Custom scrollbar styling */
+/* Custom scrollbar for messages */
 .overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
@@ -425,11 +478,11 @@ if (mockConversations.value.length > 0) {
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 3px;
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: #94a3b8;
 }
 </style>

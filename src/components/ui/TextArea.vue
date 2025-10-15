@@ -1,38 +1,38 @@
 <template>
   <textarea
-    data-slot="textarea"
-    :class="computedClass"
+    :class="cn(
+      'flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+      props.class
+    )"
     v-bind="$attrs"
+    :value="modelValue"
+    @input="$emit('update:modelValue', $event.target.value)"
   />
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
-// Props
 const props = defineProps({
-  className: {
+  modelValue: {
+    type: String,
+    default: ''
+  },
+  class: {
     type: String,
     default: ''
   }
 })
 
-function cn(...classes) {
+const emit = defineEmits(['update:modelValue'])
+
+// Simple class name utility function
+const cn = (...classes) => {
   return classes.filter(Boolean).join(' ')
 }
-
-// Computed class merging
-const computedClass = computed(() =>
-  cn(
-    'border-input placeholder:text-muted-foreground',
-    'focus-visible:border-ring focus-visible:ring-ring/50',
-    'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
-    'dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]',
-    'disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
-    props.className
-  )
-)
 </script>
 
-<style scoped>
-</style>
+<script>
+export default {
+  name: 'Textarea',
+  inheritAttrs: false
+}
+</script>

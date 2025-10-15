@@ -1,7 +1,10 @@
 <template>
   <label
-    data-slot="label"
-    :class="computedClass"
+    :for="htmlFor"
+    :class="cn(
+      'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+      props.class
+    )"
     v-bind="$attrs"
   >
     <slot />
@@ -9,30 +12,26 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-
-// Props
 const props = defineProps({
-  className: {
+  htmlFor: {
+    type: String,
+    default: undefined
+  },
+  class: {
     type: String,
     default: ''
   }
 })
 
-function cn(...classes) {
+// Simple class name utility function
+const cn = (...classes) => {
   return classes.filter(Boolean).join(' ')
 }
-
-// Computed class merging
-const computedClass = computed(() =>
-  cn(
-    'flex items-center gap-2 text-sm leading-none font-medium select-none',
-    'group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50',
-    'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
-    props.className
-  )
-)
 </script>
 
-<style scoped>
-</style>
+<script>
+export default {
+  name: 'Label',
+  inheritAttrs: false
+}
+</script>

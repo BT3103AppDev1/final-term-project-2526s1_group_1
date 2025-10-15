@@ -45,8 +45,7 @@ const variants = {
   secondary:
     'bg-secondary text-secondary-foreground hover:bg-secondary/80',
   ghost: 'hover:bg-accent hover:text-accent-foreground',
-  link: 'text-primary underline-offset-4 hover:underline',
-  custom: ''
+  link: 'text-primary underline-offset-4 hover:underline'
 }
 
 const sizes = {
@@ -64,4 +63,5 @@ const computedClass = computed(() => {
 </script>
 
 <style scoped>
+/* You can override button color variables via Tailwind theme */
 </style>

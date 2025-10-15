@@ -128,7 +128,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle
-} from '@/components/ui/Card.vue'
+} from '@/components/ui/card'
 import {
   Tabs,
   TabsContent,

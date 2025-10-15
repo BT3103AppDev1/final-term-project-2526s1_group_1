@@ -74,61 +74,51 @@
 
       <!-- Lent Section -->
       <section>
-        <h2 class="text-xl font-medium mb-3 text-green-700">Lent Items</h2>
+        <h2 class="text-xl font-medium mb-3 text-green-700">My Listed Items</h2>
         <div v-if="lentItems.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div
-            v-for="rental in lentItems"
-            :key="rental.id"
+            v-for="listing in lentItems"
+            :key="listing.id"
             class="bg-white p-4 rounded-xl shadow hover:shadow-md transition"
           >
             <img
-              v-if="rental.photoUrl"
-              :src="rental.photoUrl"
+              v-if="listing.images && listing.images.length > 0"
+              :src="listing.images[0]"
               alt="item"
               class="h-40 w-full object-cover rounded-lg mb-3"
             />
-            <h3 class="text-lg font-semibold mb-1">{{ rental.title }}</h3>
+            <h3 class="text-lg font-semibold mb-1">{{ listing.name }}</h3>
             <p class="text-gray-600 text-sm mb-2">
-              Borrower: {{ rental.borrowerName || 'N/A' }}<br />
+              Price: ${{ listing.price }}/{{ listing.pricePer || 'day' }}<br />
+              Category: {{ listing.category }}<br />
               Status:
               <span
                 :class="{
-                  'text-yellow-600': rental.status === 'Pending',
-                  'text-green-600': rental.status === 'Approved',
-                  'text-gray-600': rental.status === 'Completed',
-                  'text-red-600': rental.status === 'Cancelled'
+                  'text-green-600': listing.status === 'Available',
+                  'text-yellow-600': listing.status === 'Rented',
+                  'text-gray-600': listing.status === 'Unavailable'
                 }"
                 class="font-medium"
               >
-                {{ rental.status }}
+                {{ listing.status || 'Available' }}
               </span>
             </p>
+            <p class="text-gray-700 text-sm mb-3">{{ listing.description || 'No description available' }}</p>
 
-            <!-- Status Controls -->
-            <div v-if="rental.status !== 'Completed' && rental.status !== 'Cancelled'">
-              <label class="block text-sm font-semibold mb-1">Update Status:</label>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="status in ['Approved', 'Completed', 'Cancelled']"
-                  :key="status"
-                  class="text-sm px-3 py-1 rounded-md border hover:bg-gray-100 transition"
-                  :class="{
-                    'bg-green-100 border-green-600 text-green-700': status === 'Approved',
-                    'bg-blue-100 border-blue-600 text-blue-700': status === 'Completed',
-                    'bg-red-100 border-red-600 text-red-700': status === 'Cancelled'
-                  }"
-                  @click="updateStatus(rental, status)"
-                >
-                  {{ status }}
-                </button>
-              </div>
+            <div class="flex gap-2">
+              <router-link
+                :to="`/item/${listing.id}`"
+                class="text-blue-500 hover:underline text-sm"
+              >
+                View Item
+              </router-link>
+              <button
+                class="text-green-500 hover:underline text-sm"
+                @click="editListing(listing.id)"
+              >
+                Edit
+              </button>
             </div>
-
-            <router-link
-              :to="`/item/${rental.itemId}`"
-              class="text-blue-500 hover:underline text-sm"
-              >View Item</router-link
-            >
           </div>
         </div>
         <p v-else class="text-gray-500">You haven’t lent out any items yet.</p>
@@ -139,7 +129,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { auth, db } from '@/firebase'
+import { auth, db } from '@/firebase/config'
 import {
   collection,
   query,
@@ -147,7 +137,6 @@ import {
   getDocs,
   doc,
   updateDoc,
-  addDoc,
   serverTimestamp
 } from 'firebase/firestore'
 
@@ -157,11 +146,20 @@ const loading = ref(true)
 
 const fetchRentals = async () => {
   const user = auth.currentUser
-  if (!user) return
+  if (!user) {
+    console.log('No authenticated user found')
+    loading.value = false
+    return
+  }
 
   try {
-    // Fetch Borrowed Items
-    const borrowedQuery = query(collection(db, 'rentals'), where('borrowerId', '==', user.uid))
+    console.log('Fetching rentals for user:', user.uid)
+
+    // Fetch Borrowed Items (rental transactions where user is borrower)
+    const borrowedQuery = query(
+      collection(db, 'requests'), 
+      where('borrowerId', '==', user.uid)
+    )
     const borrowedSnap = await getDocs(borrowedQuery)
     borrowedItems.value = borrowedSnap.docs.map(doc => ({
       id: doc.id,
@@ -170,10 +168,21 @@ const fetchRentals = async () => {
       tempReview: ''
     }))
 
-    // Fetch Lent Items
-    const lentQuery = query(collection(db, 'rentals'), where('lenderId', '==', user.uid))
+    // Fetch Lent Items (listings created by user)
+    const lentQuery = query(
+      collection(db, 'listings'), 
+      where('ownerId', '==', user.uid)
+    )
     const lentSnap = await getDocs(lentQuery)
-    lentItems.value = lentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    lentItems.value = lentSnap.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    }))
+
+    console.log('Borrowed items:', borrowedItems.value.length)
+    console.log('Lent items (your listings):', lentItems.value.length)
+    console.log('Lent items data:', lentItems.value)
+
   } catch (err) {
     console.error('Error fetching rentals:', err)
   } finally {
@@ -208,6 +217,13 @@ const submitRating = async (rental) => {
   } catch (err) {
     console.error('Error submitting rating:', err)
   }
+}
+
+const editListing = (listingId) => {
+  // Navigate to edit page - you can implement this later
+  console.log('Editing listing:', listingId)
+  // For now, just log the action
+  alert('Edit functionality coming soon!')
 }
 
 onMounted(fetchRentals)

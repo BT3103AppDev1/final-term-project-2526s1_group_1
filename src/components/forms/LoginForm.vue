@@ -1,8 +1,9 @@
 <template>
   <form @submit.prevent="loginUser" class="space-y-4">
     <div>
-      <label class="block text-sm font-medium mb-1">Email</label>
+      <label for="login-email" class="block text-sm font-medium mb-1">Email</label>
       <input
+        id="login-email"
         v-model="email"
         type="email"
         placeholder="you@example.com"
@@ -12,8 +13,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-1">Password</label>
+      <label for="login-password" class="block text-sm font-medium mb-1">Password</label>
       <input
+        id="login-password"
         v-model="password"
         type="password"
         placeholder="••••••••"
@@ -25,39 +27,91 @@
     <button
       type="submit"
       class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition"
+      :disabled="loading"
     >
-      Sign In
+      <span v-if="loading">Signing In...</span>
+      <span v-else>Sign In</span>
     </button>
 
-    <p v-if="errorMessage" class="text-red-500 text-sm text-center mt-2">
-      {{ errorMessage }}
-    </p>
+    <!-- Forgot Password Link -->
+    <div class="text-center">
+      <button
+        type="button"
+        @click="$emit('changeToReset')"
+        class="text-sm text-primary hover:text-primary/80 underline"
+      >
+        Forgot your password?
+      </button>
+    </div>
+
+    <!-- Register Link -->
+    <div class="text-center text-sm text-muted-foreground">
+      Don't have an account?
+      <button
+        type="button"
+        @click="$emit('changeToRegister')"
+        class="text-primary hover:text-primary/80 underline ml-1"
+      >
+        Sign up
+      </button>
+    </div>
   </form>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { signInWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/firebase/config'
 import { useRouter } from 'vue-router'
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
 
-const router = useRouter()
 const email = ref('')
 const password = ref('')
-const errorMessage = ref('')
+const loading = ref(false)
+const router = useRouter()
+const auth = getAuth()
 
-const loginUser = async () => {
+// Define emits
+const emit = defineEmits(['changeToRegister', 'changeToReset', 'loginSuccess'])
+
+async function loginUser() {
+  if (!email.value || !password.value) {
+    alert('Please fill in all fields')
+    return
+  }
+
+  loading.value = true
+  
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value)
- 
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
+    
+    // Emit login success event
+    emit('loginSuccess', userCredential.user)
+    
+    // ✅ Redirect to browse after successful login
     router.push('/browse')
   } catch (error) {
-    console.error('Login failed:', error)
-    if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-      errorMessage.value = 'Invalid email or password.'
-    } else {
-      errorMessage.value = 'Login failed. Please try again.'
+    console.error('Login failed:', error.message)
+    
+    let errorMessage = 'Login failed. '
+    switch (error.code) {
+      case 'auth/user-not-found':
+        errorMessage += 'No account found with this email address.'
+        break
+      case 'auth/wrong-password':
+        errorMessage += 'Incorrect password.'
+        break
+      case 'auth/invalid-email':
+        errorMessage += 'Please enter a valid email address.'
+        break
+      case 'auth/too-many-requests':
+        errorMessage += 'Too many failed attempts. Please try again later.'
+        break
+      default:
+        errorMessage += 'Please check your credentials and try again.'
     }
+    
+    alert(errorMessage)
+  } finally {
+    loading.value = false
   }
 }
 </script>
