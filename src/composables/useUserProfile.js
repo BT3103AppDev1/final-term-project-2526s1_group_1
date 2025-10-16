@@ -31,8 +31,17 @@ export function useUserProfile() {
   })
 
   // Load user profile from Firestore
-  const loadUserProfile = async (userId) => {
-    console.log('Loading profile for user:', userId)
+  const loadUserProfile = async (userId = null) => {
+    // Use current user's ID if no userId provided
+    const targetUserId = userId || currentUser.value?.uid
+    
+    if (!targetUserId) {
+      error.value = 'No user ID provided and no authenticated user found'
+      loading.value = false
+      return
+    }
+    
+    console.log('Loading profile for user:', targetUserId)
     loading.value = true
     error.value = null
     
@@ -55,7 +64,7 @@ export function useUserProfile() {
       }
 
       // Use your existing collection name 'User Information'
-      const userDocRef = doc(db, 'User Information', userId)
+      const userDocRef = doc(db, 'User Information', targetUserId)
       const userDoc = await getDoc(userDocRef)
       
       if (userDoc.exists()) {
@@ -101,11 +110,11 @@ export function useUserProfile() {
       } else {
         console.log('No profile found, creating default profile')
         // Create a default profile for new users
-        await createDefaultProfile(userId)
+        await createDefaultProfile(targetUserId)
       }
     } catch (err) {
       console.error('Error loading user profile:', err)
-      error.value = err.message
+      error.value = err?.message || err?.toString() || 'An unknown error occurred'
     } finally {
       loading.value = false
     }
@@ -185,7 +194,7 @@ export function useUserProfile() {
       }
     } catch (err) {
       console.error('Error creating default profile:', err)
-      error.value = err.message
+      error.value = err?.message || err?.toString() || 'An unknown error occurred'
     }
   }
 
@@ -234,7 +243,7 @@ export function useUserProfile() {
       return true
     } catch (err) {
       console.error('Error updating user profile:', err)
-      error.value = err.message
+      error.value = err?.message || err?.toString() || 'An unknown error occurred'
       return false
     } finally {
       loading.value = false
@@ -311,7 +320,7 @@ export function useUserProfile() {
       }
     } catch (err) {
       console.error('Error getting user profile:', err)
-      error.value = err.message
+      error.value = err?.message || err?.toString() || 'An unknown error occurred'
       return null
     } finally {
       loading.value = false

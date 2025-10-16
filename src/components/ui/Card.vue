@@ -126,4 +126,15 @@ export const CardFooter = defineComponent({
       )
   }
 })
+
+// Default export for easier importing
+export default {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardContent,
+  CardFooter
+}
 </script>

@@ -1,43 +1,5 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <!-- Enhanced Header with Breadcrumb -->
-    <header class="border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <router-link to="/browse" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold text-sm">PS</span>
-              </div>
-              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PeerSwap</h1>
-            </router-link>
-            <!-- Breadcrumb -->
-            <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">
-              <span>/</span>
-              <router-link to="/browse" class="hover:text-blue-600 transition-colors">Browse</router-link>
-              <span>/</span>
-              <span class="text-slate-700 font-medium">Profile</span>
-            </div>
-          </div>
-          
-          <div class="flex items-center gap-3">
-            <Button variant="outline" size="sm" as-child class="hidden sm:inline-flex">
-              <router-link to="/list-item" class="flex items-center gap-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
-                List Item
-              </router-link>
-            </Button>
-            <Button v-if="isOwnProfile" variant="outline" size="sm" @click="openEditModal" class="flex items-center gap-2">
-              <Edit class="h-4 w-4" />
-              <span class="hidden sm:inline">Edit Profile</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div v-if="loading" class="container mx-auto px-4 py-12">
       <div class="flex flex-col items-center justify-center min-h-[400px]">
@@ -93,7 +55,7 @@
         
         <!-- Enhanced Profile Sidebar -->
         <div class="lg:col-span-1">
-          <Card class="sticky top-28 overflow-hidden border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+          <Card class="sticky top-8 overflow-hidden border-0 shadow-xl bg-white/80 backdrop-blur-sm">
             <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-50"></div>
             <CardContent class="relative p-6">
               <!-- Profile Header -->
@@ -134,6 +96,16 @@
                     <MapPin class="h-4 w-4" />
                     <span>{{ user.location || 'Location not set' }}</span>
                   </div>
+                </div>
+                
+                <!-- Edit Profile Button -->
+                <div v-if="isOwnProfile" class="mt-4">
+                  <Button variant="outline" size="sm" as-child class="w-full">
+                    <router-link to="/edit-profile" class="flex items-center justify-center gap-2">
+                      <Edit class="h-4 w-4" />
+                      Edit Profile
+                    </router-link>
+                  </Button>
                 </div>
               </div>
 
@@ -622,7 +594,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/Card.vue'
-import { Badge } from '@/components/ui/Badge.vue'
+import Badge from '@/components/ui/Badge.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.vue'
 import { Separator } from '@/components/ui/Separator.vue'
@@ -726,6 +698,34 @@ const mockReviews = [
   },
 ]
 
+// Mock user profile for testing
+const mockUserProfile = {
+  id: "test-user-1",
+  name: "tester1",
+  email: "test@u.nus.edu",
+  avatar: "",
+  bio: "Software engineering student passionate about technology and innovation.",
+  location: "testing location",
+  skills: "JavaScript, Vue.js, Photography",
+  interests: "Programming, Design, Music",
+  shortBio: "Love building things and solving problems!",
+  linkedin: "",
+  instagram: "",
+  telegram: "",
+  verified: false,
+  rating: 0,
+  reviewCount: 0,
+  totalRentals: 0,
+  responseTime: "< 3 hours",
+  joinedDate: "October 2025",
+  stats: {
+    itemsListed: 2,
+    itemsRented: 5,
+    totalEarnings: 150,
+    successfulTransactions: 8,
+  }
+}
+
 // Methods
 const getInitials = (name) => {
   if (!name) return '?'
@@ -765,6 +765,12 @@ const debugCreateProfile = async () => {
   } else {
     console.log('No current user found')
   }
+}
+
+// Debug function for tabs
+const debugTabChange = (tabValue) => {
+  console.log('Tab changed to:', tabValue)
+  activeTab.value = tabValue
 }
 
 // Load profile data
@@ -807,7 +813,15 @@ onMounted(async () => {
     userItems.value = mockUserItems
     reviews.value = mockReviews
     
+    // Use mock profile for testing if no user data is available
+    if (!user.value) {
+      user.value = mockUserProfile
+    }
+    
     console.log('Final user value:', user.value)
+    console.log('Active tab:', activeTab.value)
+    console.log('User items:', userItems.value.length)
+    console.log('Reviews:', reviews.value.length)
   } catch (error) {
     console.error('Error loading profile:', error)
   }

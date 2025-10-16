@@ -1,47 +1,7 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <!-- Enhanced Header -->
-    <header class="border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <router-link to="/browse" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold text-sm">PS</span>
-              </div>
-              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PeerSwap</h1>
-            </router-link>
-            <!-- Breadcrumb -->
-            <div class="hidden md:flex items-center gap-2 text-sm text-slate-500">
-              <span>/</span>
-              <span class="text-slate-700 font-medium">Messages</span>
-            </div>
-          </div>
-          
-          <div class="flex items-center gap-3">
-            <Button variant="outline" size="sm" as-child class="hidden sm:inline-flex">
-              <router-link to="/rentals" class="flex items-center gap-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Rentals
-              </router-link>
-            </Button>
-            <Button variant="outline" size="sm" as-child>
-              <router-link to="/profile" class="flex items-center gap-2">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span class="hidden sm:inline">Profile</span>
-              </router-link>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </header>
-
     <!-- Enhanced Messages Layout -->
-    <div class="container mx-auto px-4 py-6 h-[calc(100vh-88px)]">
+    <div class="container mx-auto px-4 py-6 h-screen">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         
         <!-- Enhanced Conversations List -->

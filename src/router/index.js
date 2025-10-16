@@ -77,6 +77,12 @@ const router = createRouter({
       component: () => import('@/views/ProfilePage.vue')
     },
     {
+      path: '/edit-profile',
+      name: 'edit-profile',
+      component: () => import('@/views/EditProfile.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/messages',
       name: 'messages',
       component: () => import('@/views/MessagesPage.vue'),

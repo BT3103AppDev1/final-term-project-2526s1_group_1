@@ -4,16 +4,8 @@
   </div>
 </template>
 
-<script setup>
-import { provide, ref } from 'vue'
-
-const activeTab = defineModel('modelValue', { default: 'overview' })
-
-provide('activeTab', activeTab)
-</script>
-
 <script>
-import { defineComponent, h, inject } from 'vue'
+import { defineComponent, h, inject, provide } from 'vue'
 
 export const Tabs = defineComponent({
   name: 'Tabs',
@@ -23,10 +15,12 @@ export const Tabs = defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { slots, emit }) {
-    provide('activeTab', {
-      value: props.modelValue,
+    const activeTabRef = {
+      get value() { return props.modelValue },
       setValue: (value) => emit('update:modelValue', value)
-    })
+    }
+    
+    provide('activeTab', activeTabRef)
     
     return () =>
       h('div', { class: props.class }, slots.default ? slots.default() : [])
@@ -59,7 +53,9 @@ export const TabsTrigger = defineComponent({
     const isActive = () => activeTab?.value === props.value
     
     const handleClick = () => {
-      activeTab?.setValue(props.value)
+      if (activeTab?.setValue) {
+        activeTab.setValue(props.value)
+      }
     }
     
     return () =>
@@ -69,6 +65,7 @@ export const TabsTrigger = defineComponent({
           isActive() ? 'bg-background text-foreground shadow-sm' : '',
           props.class
         ].filter(Boolean).join(' '),
+        'data-state': isActive() ? 'active' : 'inactive',
         onClick: handleClick
       }, slots.default ? slots.default() : [])
   }
@@ -97,4 +94,12 @@ export const TabsContent = defineComponent({
     }
   }
 })
+
+// Default export for easier importing
+export default {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent
+}
 </script>

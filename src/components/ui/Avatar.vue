@@ -4,13 +4,6 @@
   </div>
 </template>
 
-<script setup>
-// Avatar setup script (default export)
-defineProps({
-  class: String
-})
-</script>
-
 <script>
 import { defineComponent, h, ref } from 'vue'
 
@@ -77,4 +70,11 @@ export const AvatarFallback = defineComponent({
       }, slots.default ? slots.default() : [])
   }
 })
+
+// Default export for easier importing
+export default {
+  Avatar,
+  AvatarImage,
+  AvatarFallback
+}
 </script>
