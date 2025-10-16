@@ -225,7 +225,7 @@ import {
 } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
-import { Badge } from '@/components/ui/Badge.vue'
+import { Badge } from '@/components/ui/badge.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
 const route = useRoute()

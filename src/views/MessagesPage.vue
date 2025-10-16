@@ -254,6 +254,9 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+import { useMessages } from '@/composables/useMessages'
+import { auth } from '@/firebase/config'
 import { ref, computed, nextTick } from 'vue'
 import { Send, Search, MoreVertical, Phone, Video, Info } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
@@ -268,149 +271,160 @@ const searchQuery = ref('')
 const messagesContainer = ref(null)
 const messages = ref([])
 
-// Mock conversations (replace with Firebase later)
-const mockConversations = ref([
-  {
-    id: "conv-1",
-    user: {
-      name: "Alex Rodriguez",
-      avatar: "/placeholder.svg?key=alex-msg",
-      online: true,
-    },
-    lastMessage: {
-      text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
-      timestamp: "2 min ago",
-      unread: false,
-    },
-    item: "Calculus Textbook - 8th Edition",
-  },
-  {
-    id: "conv-2",
-    user: {
-      name: "Emma Davis",
-      avatar: "/placeholder.svg?key=emma-msg",
-      online: false,
-    },
-    lastMessage: {
-      text: "Is the textbook still available for next week?",
-      timestamp: "1 hour ago",
-      unread: true,
-    },
-    item: "Engineering Mechanics Textbook",
-  },
-  {
-    id: "conv-3",
-    user: {
-      name: "Mike Johnson",
-      avatar: "/placeholder.svg?key=mike-msg",
-      online: true,
-    },
-    lastMessage: {
-      text: "Perfect! The laptop works great. Thanks again!",
-      timestamp: "3 hours ago",
-      unread: false,
-    },
-    item: "MacBook Pro 13-inch",
-  },
-  {
-    id: "conv-4",
-    user: {
-      name: "Sarah Chen",
-      avatar: "/placeholder.svg?key=sarah-msg",
-      online: false,
-    },
-    lastMessage: {
-      text: "I'm interested in renting your camera for the weekend",
-      timestamp: "1 day ago",
-      unread: true,
-    },
-    item: "Canon EOS R Camera",
-  },
-  {
-    id: "conv-5",
-    user: {
-      name: "David Kim",
-      avatar: "/placeholder.svg?key=david-msg",
-      online: true,
-    },
-    lastMessage: {
-      text: "Great condition! Would you consider $20 for 2 weeks?",
-      timestamp: "2 days ago",
-      unread: false,
-    },
-    item: "Wireless Headphones",
-  },
-])
+// Mock conversations (replace with Firebase later) ---remove temp
+// const mockConversations = ref([
+//   {
+//     id: "conv-1",
+//     user: {
+//       name: "Alex Rodriguez",
+//       avatar: "/placeholder.svg?key=alex-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
+//       timestamp: "2 min ago",
+//       unread: false,
+//     },
+//     item: "Calculus Textbook - 8th Edition",
+//   },
+//   {
+//     id: "conv-2",
+//     user: {
+//       name: "Emma Davis",
+//       avatar: "/placeholder.svg?key=emma-msg",
+//       online: false,
+//     },
+//     lastMessage: {
+//       text: "Is the textbook still available for next week?",
+//       timestamp: "1 hour ago",
+//       unread: true,
+//     },
+//     item: "Engineering Mechanics Textbook",
+//   },
+//   {
+//     id: "conv-3",
+//     user: {
+//       name: "Mike Johnson",
+//       avatar: "/placeholder.svg?key=mike-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Perfect! The laptop works great. Thanks again!",
+//       timestamp: "3 hours ago",
+//       unread: false,
+//     },
+//     item: "MacBook Pro 13-inch",
+//   },
+//   {
+//     id: "conv-4",
+//     user: {
+//       name: "Sarah Chen",
+//       avatar: "/placeholder.svg?key=sarah-msg",
+//       online: false,
+//     },
+//     lastMessage: {
+//       text: "I'm interested in renting your camera for the weekend",
+//       timestamp: "1 day ago",
+//       unread: true,
+//     },
+//     item: "Canon EOS R Camera",
+//   },
+//   {
+//     id: "conv-5",
+//     user: {
+//       name: "David Kim",
+//       avatar: "/placeholder.svg?key=david-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Great condition! Would you consider $20 for 2 weeks?",
+//       timestamp: "2 days ago",
+//       unread: false,
+//     },
+//     item: "Wireless Headphones",
+//   },
+// ])
 
-// Mock messages for selected conversation
-const mockMessages = {
-  "conv-1": [
-    {
-      id: "msg-1",
-      text: "Hi! I'm interested in renting your Calculus textbook.",
-      timestamp: "Yesterday 10:30 AM",
-      isMe: false,
-    },
-    {
-      id: "msg-2",
-      text: "Sure! It's available. When would you need it?",
-      timestamp: "Yesterday 10:45 AM",
-      isMe: true,
-    },
-    {
-      id: "msg-3",
-      text: "I need it for next week. Is $15/week okay?",
-      timestamp: "Yesterday 11:00 AM",
-      isMe: false,
-    },
-    {
-      id: "msg-4",
-      text: "That works! You can pick it up tomorrow at 2 PM.",
-      timestamp: "Yesterday 11:15 AM",
-      isMe: true,
-    },
-    {
-      id: "msg-5",
-      text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
-      timestamp: "2 min ago",
-      isMe: false,
-    },
-  ],
-  "conv-2": [
-    {
-      id: "msg-6",
-      text: "Is the textbook still available for next week?",
-      timestamp: "1 hour ago",
-      isMe: false,
-    },
-  ],
-  "conv-3": [
-    {
-      id: "msg-7",
-      text: "How's the laptop working out?",
-      timestamp: "3 hours ago",
-      isMe: true,
-    },
-    {
-      id: "msg-8",
-      text: "Perfect! The laptop works great. Thanks again!",
-      timestamp: "3 hours ago",
-      isMe: false,
-    },
-  ],
-}
+// // Mock messages for selected conversation
+// const mockMessages = {
+//   "conv-1": [
+//     {
+//       id: "msg-1",
+//       text: "Hi! I'm interested in renting your Calculus textbook.",
+//       timestamp: "Yesterday 10:30 AM",
+//       isMe: false,
+//     },
+//     {
+//       id: "msg-2",
+//       text: "Sure! It's available. When would you need it?",
+//       timestamp: "Yesterday 10:45 AM",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-3",
+//       text: "I need it for next week. Is $15/week okay?",
+//       timestamp: "Yesterday 11:00 AM",
+//       isMe: false,
+//     },
+//     {
+//       id: "msg-4",
+//       text: "That works! You can pick it up tomorrow at 2 PM.",
+//       timestamp: "Yesterday 11:15 AM",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-5",
+//       text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
+//       timestamp: "2 min ago",
+//       isMe: false,
+//     },
+//   ],
+//   "conv-2": [
+//     {
+//       id: "msg-6",
+//       text: "Is the textbook still available for next week?",
+//       timestamp: "1 hour ago",
+//       isMe: false,
+//     },
+//   ],
+//   "conv-3": [
+//     {
+//       id: "msg-7",
+//       text: "How's the laptop working out?",
+//       timestamp: "3 hours ago",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-8",
+//       text: "Perfect! The laptop works great. Thanks again!",
+//       timestamp: "3 hours ago",
+//       isMe: false,
+//     },
+//   ],
+// }
+const { getConversations, subscribeToMessages, sendMessage } = useMessages()
+
+const conversations = ref([])
+const loading = ref(false)
+const currentUserId = ref(null)
+
+onMounted(async () => {
+  loading.value = true
+  currentUserId.value = auth.currentUser.uid
+  conversations.value = await getConversations()
+  loading.value = false
+})
 
 // Computed
 const filteredConversations = computed(() => {
-  if (!searchQuery.value) return mockConversations.value
+  if (!searchQuery.value) return conversations.value
   
   const query = searchQuery.value.toLowerCase()
-  return mockConversations.value.filter(conv => 
-    conv.user.name.toLowerCase().includes(query) ||
-    conv.item.toLowerCase().includes(query) ||
-    conv.lastMessage.text.toLowerCase().includes(query)
+  return conversations.value.filter(conv => 
+    (conv.itemTitle || '').toLowerCase().includes(query)
   )
 })
+
 
 // Methods
 const getInitials = (name) => {
@@ -424,12 +438,29 @@ const getInitials = (name) => {
 
 const selectConversation = (conversation) => {
   selectedConversation.value = conversation
-  messages.value = mockMessages[conversation.id] || []
+  messages.value = [] // 초기화
+  subscribeToMessages(conversation.id, (msgs) => {
+    messages.value = msgs.map(m => ({
+      id: m.id,
+      text: m.text,
+      timestamp: m.createdAt?.toDate?.()?.toLocaleString() || '',
+      isMe: m.senderId === currentUserId.value
+    }))
+    nextTick(() => {
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+      }
+    })
+  })
+}
+
+
+const handleSendMessage = async () => {
+  if (!newMessage.value.trim() || !selectedConversation.value) return
   
-  // Mark as read
-  conversation.lastMessage.unread = false
+  await sendMessage(selectedConversation.value.id, newMessage.value.trim())
+  newMessage.value = ''
   
-  // Scroll to bottom
   nextTick(() => {
     if (messagesContainer.value) {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
@@ -437,34 +468,6 @@ const selectConversation = (conversation) => {
   })
 }
 
-const handleSendMessage = () => {
-  if (!newMessage.value.trim() || !selectedConversation.value) return
-  
-  const message = {
-    id: `msg-${Date.now()}`,
-    text: newMessage.value.trim(),
-    timestamp: "Just now",
-    isMe: true,
-  }
-  
-  messages.value.push(message)
-  
-  // Update last message in conversation
-  selectedConversation.value.lastMessage = {
-    text: message.text,
-    timestamp: message.timestamp,
-    unread: false,
-  }
-  
-  newMessage.value = ''
-  
-  // Scroll to bottom
-  nextTick(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    }
-  })
-}
 </script>
 
 <style scoped>

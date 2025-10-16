@@ -3,12 +3,15 @@ import { db, auth } from '@/firebase/config'
 import {
   collection,
   addDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
   query,
   where,
   orderBy,
   onSnapshot,
-  serverTimestamp,
-  getDocs
+  serverTimestamp
 } from 'firebase/firestore'
 
 export function useMessages() {
@@ -17,39 +20,71 @@ export function useMessages() {
   const conversations = ref([])
   const messages = ref([])
 
-  // Get all conversations for current user
+  /**
+   * Fetch all conversations for the current user,
+   * and merge participant profile data from "User Information" collection.
+   */
   const getConversations = async () => {
     loading.value = true
     error.value = null
 
     try {
-      if (!auth.currentUser) {
-        throw new Error('You must be logged in')
-      }
+      const currentUserId = auth.currentUser?.uid
+      if (!currentUserId) throw new Error('User not logged in')
 
-      // Get conversations where user is participant
+      // Query conversations that include the current user
       const q = query(
         collection(db, 'conversations'),
-        where('participants', 'array-contains', auth.currentUser.uid),
+        where('participants', 'array-contains', currentUserId),
         orderBy('lastMessageAt', 'desc')
       )
 
-      const querySnapshot = await getDocs(q)
-      conversations.value = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
+      const snapshot = await getDocs(q)
 
-      return conversations.value
+      // Merge participant info (excluding current user)
+      const convos = await Promise.all(
+        snapshot.docs.map(async (docSnap) => {
+          const data = docSnap.data()
+          const otherUserId = data.participants.find(id => id !== currentUserId)
+
+          let userData = { name: 'Unknown', avatar: '/placeholder.svg', online: false }
+
+          if (otherUserId) {
+            const userRef = doc(db, 'User Information', otherUserId)
+            const userSnap = await getDoc(userRef)
+            if (userSnap.exists()) {
+              const userInfo = userSnap.data()
+              userData = {
+                name: userInfo.name || 'Unknown User',
+                avatar: userInfo.avatar || '/placeholder.svg',
+                online: userInfo.online || false
+              }
+            }
+          }
+
+          return {
+            id: docSnap.id,
+            ...data,
+            user: userData
+          }
+        })
+      )
+
+      conversations.value = convos
+      return convos
     } catch (err) {
+      console.error('getConversations Error:', err)
       error.value = err.message
-      throw err
+      return []
     } finally {
       loading.value = false
     }
   }
 
-  // Subscribe to real-time messages for a conversation
+  /**
+   * Subscribe to real-time updates for a given conversation.
+   * Automatically updates message list and triggers optional callback.
+   */
   const subscribeToMessages = (conversationId, callback) => {
     const q = query(
       collection(db, 'conversations', conversationId, 'messages'),
@@ -61,58 +96,76 @@ export function useMessages() {
         id: doc.id,
         ...doc.data()
       }))
-      
       messages.value = msgs
       if (callback) callback(msgs)
     })
   }
 
-  // Send a message
-  const sendMessage = async (conversationId, messageText) => {
+  /**
+   * Send a new message to a conversation and update its lastMessage field.
+   */
+  const sendMessage = async (conversationId, text) => {
     loading.value = true
     error.value = null
 
     try {
-      if (!auth.currentUser) {
-        throw new Error('You must be logged in')
-      }
+      const currentUser = auth.currentUser
+      if (!currentUser) throw new Error('User not logged in')
 
-      // Add message to conversation
+      // Add the message
       await addDoc(
         collection(db, 'conversations', conversationId, 'messages'),
         {
-          text: messageText,
-          senderId: auth.currentUser.uid,
-          senderName: auth.currentUser.displayName,
+          text,
+          senderId: currentUser.uid,
+          senderName: currentUser.displayName || 'Anonymous',
           createdAt: serverTimestamp()
         }
       )
 
-      // Update conversation's last message
-      // (You'd use updateDoc here to update the conversation document)
-
+      // Update conversation with last message preview
+      const convoRef = doc(db, 'conversations', conversationId)
+      await updateDoc(convoRef, {
+        lastMessage: text,
+        lastMessageAt: serverTimestamp()
+      })
     } catch (err) {
+      console.error('sendMessage Error:', err)
       error.value = err.message
-      throw err
     } finally {
       loading.value = false
     }
   }
 
-  // Create a new conversation
+  /**
+   * Create a new conversation (if it doesn’t already exist)
+   * between the current user and another participant.
+   */
   const createConversation = async (participantId, itemId, itemTitle) => {
     loading.value = true
     error.value = null
 
     try {
-      if (!auth.currentUser) {
-        throw new Error('You must be logged in')
-      }
+      const currentUser = auth.currentUser
+      if (!currentUser) throw new Error('User not logged in')
 
+      // Check for existing conversation between these two users for the same item
+      const existingQ = query(
+        collection(db, 'conversations'),
+        where('participants', 'array-contains', currentUser.uid)
+      )
+      const snapshot = await getDocs(existingQ)
+      const existing = snapshot.docs.find(
+        d => d.data().participants.includes(participantId) && d.data().itemId === itemId
+      )
+
+      if (existing) return existing.id
+
+      // Otherwise, create a new conversation
       const docRef = await addDoc(collection(db, 'conversations'), {
-        participants: [auth.currentUser.uid, participantId],
-        itemId: itemId,
-        itemTitle: itemTitle,
+        participants: [currentUser.uid, participantId],
+        itemId,
+        itemTitle,
         lastMessage: '',
         lastMessageAt: serverTimestamp(),
         createdAt: serverTimestamp()
@@ -120,6 +173,7 @@ export function useMessages() {
 
       return docRef.id
     } catch (err) {
+      console.error('createConversation Error:', err)
       error.value = err.message
       throw err
     } finally {
