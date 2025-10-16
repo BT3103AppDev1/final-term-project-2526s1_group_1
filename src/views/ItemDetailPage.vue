@@ -392,12 +392,42 @@ const fetchItem = async (itemId) => {
   try {
     loading.value = true
     error.value = null
-    
+
     const itemDoc = doc(db, 'listings', itemId)
     const itemSnap = await getDoc(itemDoc)
-    
+
     if (itemSnap.exists()) {
       const itemData = itemSnap.data()
+
+      let ownerData = {
+        name: itemData.ownerName || 'Unknown',
+        avatar: "/placeholder.svg",
+        verified: false,
+        joinedDate: "Unknown",
+        itemsCount: 0,
+        rentalsCount: 0
+      }
+
+      if (itemData.ownerId) {
+        try {
+          const ownerDoc = doc(db, 'users', itemData.ownerId)
+          const ownerSnap = await getDoc(ownerDoc)
+          if (ownerSnap.exists()) {
+            const fetchedOwner = ownerSnap.data()
+            ownerData = {
+              name: fetchedOwner.name || ownerData.name,
+              avatar: fetchedOwner.avatar || ownerData.avatar,
+              verified: fetchedOwner.verified || false,
+              joinedDate: fetchedOwner.joinedDate || ownerData.joinedDate,
+              itemsCount: fetchedOwner.itemsCount || 0,
+              rentalsCount: fetchedOwner.rentalsCount || 0
+            }
+          }
+        } catch (ownerErr) {
+          console.warn('Owner profile not found, using fallback data')
+        }
+      }
+
       item.value = {
         id: itemSnap.id,
         name: itemData.name,
@@ -408,24 +438,16 @@ const fetchItem = async (itemId) => {
         condition: itemData.condition,
         location: itemData.location,
         images: itemData.images || [],
-        available: itemData.status === 'Available',
+        available: itemData.status === 'active',
         createdAt: itemData.createdAt,
         ownerId: itemData.ownerId,
-        // Convert Firebase timestamp to readable format
-        postedAt: itemData.createdAt ? new Date(itemData.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown',
+        postedAt: itemData.createdAt
+          ? new Date(itemData.createdAt.seconds * 1000).toLocaleDateString()
+          : 'Unknown',
         views: itemData.views || 0,
         specifications: itemData.specifications || {},
         rentalTerms: itemData.rentalTerms || [],
-        owner: {
-          name: itemData.ownerName || 'Unknown',
-          avatar: "/placeholder.svg?key=owner",
-          rating: 4.8,
-          reviewCount: 15,
-          verified: true,
-          joinedDate: "2023",
-          itemsCount: 5,
-          rentalsCount: 20
-        }
+        owner: ownerData
       }
     } else {
       error.value = 'Item not found'
@@ -439,6 +461,7 @@ const fetchItem = async (itemId) => {
     loading.value = false
   }
 }
+
 
 const getInitials = (name) => {
   if (!name) return '?'
