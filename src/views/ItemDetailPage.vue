@@ -375,8 +375,11 @@ import {
 } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
-import { Badge } from '@/components/ui/badge.vue'
+import { Badge } from '@/components/ui/Badge.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
+import { useMessages } from '@/composables/useMessages'
+import { auth } from '@/firebase/config'
+
 
 const route = useRoute()
 const router = useRouter()
@@ -430,7 +433,7 @@ const fetchItem = async (itemId) => {
 
       item.value = {
         id: itemSnap.id,
-        name: itemData.name,
+        name: itemData.title || itemData.name,
         description: itemData.description,
         price: itemData.price,
         pricePer: itemData.pricePer || 'day',
@@ -498,9 +501,49 @@ const requestRental = () => {
   console.log('Requesting rental for:', item.value.name)
 }
 
-const sendMessage = () => {
-  router.push('/messages')
+const { createConversation, getConversations } = useMessages()
+
+const sendMessage = async () => {
+  try {
+    if (!auth.currentUser) {
+      alert('Please log in first.')
+      router.push('/login')
+      return
+    }
+
+    const participantId = item.value.ownerId
+    const itemId = item.value.id
+    const itemTitle = item.value.title || item.value.name
+
+    if (!participantId || participantId === auth.currentUser.uid) {
+      alert('You cannot message yourself.')
+      return
+    }
+
+    const allConvs = await getConversations()
+    const existingConv = allConvs.find(c =>
+      c.participants.includes(auth.currentUser.uid) &&
+      c.participants.includes(participantId) &&
+      c.itemId === itemId
+    )
+
+    let conversationId
+
+    if (existingConv) {
+      conversationId = existingConv.id
+      console.log('✅ Existing conversation found:', conversationId)
+    } else {
+      const newConvId = await createConversation(participantId, itemId, itemTitle)
+      conversationId = newConvId
+      console.log('✅ New conversation created:', conversationId)
+    }
+
+    router.push(`/messages/${conversationId}`)
+  } catch (err) {
+    console.error('Error starting conversation:', err)
+  }
 }
+
 
 const viewOwnerProfile = () => {
   router.push(`/profile/${item.value.owner.id}`)
