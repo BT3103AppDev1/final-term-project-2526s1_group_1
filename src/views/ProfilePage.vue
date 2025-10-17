@@ -318,18 +318,28 @@
                 </Button>
               </div>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Loading State -->
+              <div v-if="itemsLoading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div v-for="n in 4" :key="n" class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-0 animate-pulse">
+                  <div class="h-48 bg-slate-200 rounded-lg mb-4"></div>
+                  <div class="h-4 bg-slate-200 rounded mb-2"></div>
+                  <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                </div>
+              </div>
+
+              <!-- User Items Grid -->
+              <div v-else-if="userItems.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div v-for="item in userItems" :key="item.id" class="relative group">
                   <ItemCard :item="item" class="transform hover:scale-105 transition-all duration-200 shadow-lg" />
                   <!-- Stats Overlay -->
                   <div class="absolute top-3 left-3 flex gap-2">
                     <Badge class="bg-white/90 text-slate-700 border-0 shadow-sm">
                       <Eye class="h-3 w-3 mr-1" />
-                      {{ item.views }}
+                      {{ item.views || 0 }}
                     </Badge>
                     <Badge class="bg-white/90 text-slate-700 border-0 shadow-sm">
                       <Heart class="h-3 w-3 mr-1" />
-                      {{ item.favorites }}
+                      {{ item.favorites || 0 }}
                     </Badge>
                   </div>
                   <!-- Status Indicator -->
@@ -340,7 +350,7 @@
               </div>
               
               <!-- Empty State -->
-              <div v-if="userItems.length === 0" class="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border-0 shadow-lg">
+              <div v-else-if="!itemsLoading && userItems.length === 0" class="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border-0 shadow-lg">
                 <div class="h-20 w-20 rounded-full bg-slate-100 mx-auto mb-6 flex items-center justify-center">
                   <svg class="h-10 w-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -370,7 +380,22 @@
                 </div>
               </div>
               
-              <div class="space-y-6">
+              <!-- Loading State -->
+              <div v-if="reviewsLoading" class="space-y-6">
+                <div v-for="n in 3" :key="n" class="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-0 animate-pulse">
+                  <div class="flex items-start gap-4">
+                    <div class="h-12 w-12 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                      <div class="h-4 bg-slate-200 rounded w-1/4"></div>
+                      <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                      <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reviews List -->
+              <div v-else-if="reviews.length > 0" class="space-y-6">
                 <ReviewCard
                   v-for="review in reviews"
                   :key="review.id"
@@ -380,7 +405,7 @@
               </div>
               
               <!-- Empty State -->
-              <div v-if="reviews.length === 0" class="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border-0 shadow-lg">
+              <div v-else-if="!reviewsLoading && reviews.length === 0" class="text-center py-16 bg-white/80 backdrop-blur-sm rounded-xl border-0 shadow-lg">
                 <div class="h-20 w-20 rounded-full bg-amber-100 mx-auto mb-6 flex items-center justify-center">
                   <Star class="h-10 w-10 text-amber-500" />
                 </div>
@@ -563,14 +588,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Edit Profile Modal -->
-    <EditProfileModal
-      v-if="showEditModal && user"
-      :user="user"
-      @close="closeEditModal"
-      @updated="handleProfileUpdated"
-    />
   </div>
 </template>
 
@@ -600,8 +617,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs.v
 import { Separator } from '@/components/ui/Separator.vue'
 import ItemCard from '@/components/ui/ItemCard.vue'
 import ReviewCard from '@/components/ReviewCard.vue'
-import EditProfileModal from '@/components/EditProfileModal.vue'
 import { useUserProfile } from '@/composables/useUserProfile'
+import { useListings } from '@/composables/useListings'
+import { useReviews } from '@/composables/useReviews'
 
 const route = useRoute()
 const router = useRouter()
@@ -609,12 +627,19 @@ const router = useRouter()
 // Use the Firebase user profile composable
 const { user, loading, error, isOwnProfile, getUserProfileById, currentUser, loadUserProfile, authInitialized } = useUserProfile()
 
+// Use the listings composable
+const { getUserListings, loading: listingsLoading } = useListings()
+
+// Use the reviews composable
+const { getUserReviews, getUserAverageRating, loading: reviewsComposableLoading } = useReviews()
+
 // State
 const activeTab = ref('overview')
 const isFollowing = ref(false)
 const userItems = ref([])
 const reviews = ref([])
-const showEditModal = ref(false)
+const itemsLoading = ref(false)
+const reviewsLoading = ref(false)
 
 // If viewing someone else's profile, get their ID from route params
 const profileUserId = computed(() => route.params.id || null)
@@ -745,25 +770,57 @@ const toggleFollow = () => {
   // TODO: Implement follow/unfollow in Firebase
 }
 
-const openEditModal = () => {
-  showEditModal.value = true
-}
-
-const closeEditModal = () => {
-  showEditModal.value = false
-}
-
-const handleProfileUpdated = () => {
-  // The user profile will be automatically updated through the composable
-  console.log('Profile updated successfully!')
-}
-
 const debugCreateProfile = async () => {
   if (currentUser.value) {
     console.log('Manually triggering profile creation for:', currentUser.value.uid)
     await loadUserProfile(currentUser.value.uid)
   } else {
     console.log('No current user found')
+  }
+}
+
+// Load user's listings from Firebase
+const loadUserItems = async (userId = null) => {
+  try {
+    itemsLoading.value = true
+    console.log('Loading user items for:', userId || currentUser.value?.uid)
+    
+    const listings = await getUserListings(userId)
+    userItems.value = listings
+    
+    console.log(`Loaded ${listings.length} items for user`)
+  } catch (err) {
+    console.error('Error loading user items:', err)
+    userItems.value = []
+  } finally {
+    itemsLoading.value = false
+  }
+}
+
+// Load user's reviews from Firebase
+const loadUserReviews = async (userId = null) => {
+  try {
+    reviewsLoading.value = true
+    console.log('Loading user reviews for:', userId || currentUser.value?.uid)
+    
+    const userReviews = await getUserReviews(userId)
+    reviews.value = userReviews
+    
+    console.log(`Loaded ${userReviews.length} reviews for user`)
+    
+    // Also update user rating based on reviews
+    if (userReviews.length > 0) {
+      const { average, total } = await getUserAverageRating(userId)
+      if (user.value) {
+        user.value.rating = average
+        user.value.reviewCount = total
+      }
+    }
+  } catch (err) {
+    console.error('Error loading user reviews:', err)
+    reviews.value = []
+  } finally {
+    reviewsLoading.value = false
   }
 }
 
@@ -806,12 +863,16 @@ onMounted(async () => {
     if (profileUserId.value) {
       console.log('Loading specific user profile:', profileUserId.value)
       await getUserProfileById(profileUserId.value)
+      // Load listings for the specific user
+      await loadUserItems(profileUserId.value)
+      // Load reviews for the specific user
+      await loadUserReviews(profileUserId.value)
+    } else {
+      // Load listings for the current user
+      await loadUserItems()
+      // Load reviews for the current user
+      await loadUserReviews()
     }
-    // Otherwise, the composable will automatically load the current user's profile
-    
-    // Load mock data (replace with Firebase queries later)
-    userItems.value = mockUserItems
-    reviews.value = mockReviews
     
     // Use mock profile for testing if no user data is available
     if (!user.value) {

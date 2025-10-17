@@ -26,7 +26,7 @@
 
     <button
       type="submit"
-      class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition"
+      class="w-full bg-primary text-primary-foreground py-2 rounded-md transition-all duration-300 transform hover:bg-orange-600 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/25 active:scale-95"
       :disabled="loading"
     >
       <span v-if="loading">Signing In...</span>
@@ -50,7 +50,7 @@
       <button
         type="button"
         @click="$emit('changeToRegister')"
-        class="text-primary hover:text-primary/80 underline ml-1"
+        class="text-orange-600 hover:text-orange-700 underline ml-1 font-medium"
       >
         Sign up
       </button>

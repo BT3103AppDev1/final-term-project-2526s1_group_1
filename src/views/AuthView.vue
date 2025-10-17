@@ -11,14 +11,15 @@
       
       <!-- Logo and Branding -->
       <div class="relative z-10">
-        <div class="flex items-center gap-4 mb-8">
-          <div class="h-16 w-16 rounded-2xl bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center">
-            <span class="text-white font-bold text-2xl">PS</span>
+        <!-- Logo and Title -->
+        <div class="flex items-center gap-3 mb-8">
+          <div class="h-12 w-12 rounded-xl bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center border border-white border-opacity-20">
+            <span class="text-orange-600 font-bold text-lg">PS</span>
           </div>
-          <h1 class="text-4xl font-bold text-white">PeerSwap</h1>
-        </div>
-        
-        <h2 class="text-3xl font-bold text-white mb-6 leading-tight">
+          <h1 class="text-3xl font-bold text-white drop-shadow-lg">
+            PeerSwap
+          </h1>
+        </div>        <h2 class="text-3xl font-bold text-white mb-6 leading-tight">
           Connect with Fellow Students
         </h2>
         <p class="text-orange-100 text-lg leading-relaxed">
@@ -29,26 +30,20 @@
       <!-- Features List -->
       <div class="relative z-10 space-y-4">
         <div class="flex items-center gap-3 text-white">
-          <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+          <div class="w-8 h-8 bg-white bg-opacity-30 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white border-opacity-20">
+            <span class="text-black text-lg font-bold">✓</span>
           </div>
           <span class="font-medium">Student-verified community</span>
         </div>
         <div class="flex items-center gap-3 text-white">
-          <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+          <div class="w-8 h-8 bg-white bg-opacity-30 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white border-opacity-20">
+            <span class="text-black text-lg font-bold">✓</span>
           </div>
           <span class="font-medium">Secure messaging & transactions</span>
         </div>
         <div class="flex items-center gap-3 text-white">
-          <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
+          <div class="w-8 h-8 bg-white bg-opacity-30 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white border-opacity-20">
+            <span class="text-black text-lg font-bold">✓</span>
           </div>
           <span class="font-medium">Save up to 70% on textbooks</span>
         </div>
@@ -112,13 +107,6 @@
               <!-- Auth Toggle Buttons -->
               <div v-if="currentView === 'login'" class="space-y-2">
                 <button 
-                  @click="currentView = 'register'"
-                  class="text-orange-600 hover:text-orange-700 font-medium text-sm transition-colors"
-                >
-                  Don't have an account? <span class="underline">Sign up</span>
-                </button>
-                <br>
-                <button 
                   @click="currentView = 'reset'"
                   class="text-gray-500 hover:text-gray-700 text-sm transition-colors"
                 >
@@ -145,14 +133,6 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Terms and Privacy -->
-        <div class="mt-6 text-center text-xs text-gray-500">
-          By continuing, you agree to our 
-          <a href="#" class="text-orange-600 hover:text-orange-700 underline">Terms of Service</a>
-          and 
-          <a href="#" class="text-orange-600 hover:text-orange-700 underline">Privacy Policy</a>
         </div>
       </div>
     </div>

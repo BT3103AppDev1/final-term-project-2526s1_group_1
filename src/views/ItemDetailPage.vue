@@ -1,35 +1,5 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <!-- Enhanced Header -->
-    <header class="border-b border-slate-200/60 bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <Button variant="ghost" size="sm" as-child class="hover:bg-slate-100 transition-colors">
-              <router-link to="/browse" class="flex items-center gap-2">
-                <ArrowLeft class="h-4 w-4" />
-                <span class="hidden sm:inline">Back to Browse</span>
-              </router-link>
-            </Button>
-            <div class="flex items-center gap-3">
-              <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <span class="text-white font-bold text-sm">PS</span>
-              </div>
-              <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PeerSwap</h1>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" as-child class="flex items-center gap-2">
-            <router-link to="/profile">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-              <span class="hidden sm:inline">Profile</span>
-            </router-link>
-          </Button>
-        </div>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div v-if="loading" class="container mx-auto px-4 py-12">
       <div class="flex flex-col items-center justify-center min-h-[400px]">
@@ -198,6 +168,28 @@
       </div>
     </div>
 
+    <!-- Error State -->
+    <div v-else-if="error" class="container mx-auto px-4 py-12">
+      <div class="text-center">
+        <div class="text-6xl mb-4">😞</div>
+        <h3 class="text-xl font-semibold mb-3">{{ error }}</h3>
+        <p class="text-slate-600 mb-6">
+          {{ error === 'Item not found' ? 
+            "The item you're looking for doesn't exist or may have been removed." :
+            "We're having trouble loading this item. Please try again." 
+          }}
+        </p>
+        <div class="flex gap-3 justify-center">
+          <Button as-child variant="outline">
+            <router-link to="/browse">Back to Browse</router-link>
+          </Button>
+          <Button @click="fetchItemData(route.params.id)" v-if="error !== 'Item not found'">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    </div>
+
     <!-- Item Not Found -->
     <div v-else class="container mx-auto px-4 py-12">
       <div class="text-center">
@@ -214,6 +206,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '@/firebase.js'
 import {
   MapPin,
   Star,
@@ -236,43 +230,7 @@ const item = ref(null)
 const loading = ref(true)
 const selectedImageIndex = ref(0)
 const isSaved = ref(false)
-
-// Mock item data
-const mockItem = {
-  id: "1",
-  title: "Calculus Textbook - 8th Edition",
-  description: "Stewart Calculus textbook in excellent condition. Perfect for Calculus I and II courses.",
-  price: 15,
-  period: "week",
-  category: "Textbooks",
-  condition: "Excellent",
-  location: "Campus North",
-  postedAt: "2 days ago",
-  available: true,
-  images: [
-    "/calculus-textbook-front-cover.jpg",
-    "/placeholder.svg?key=calc-2",
-    "/placeholder.svg?key=calc-3"
-  ],
-  specifications: {
-    "Edition": "8th Edition",
-    "Author": "James Stewart",
-    "ISBN": "978-1305266636",
-    "Pages": "1344"
-  },
-  rentalTerms: [
-    "Textbook must be returned in the same condition",
-    "No writing or highlighting allowed",
-    "Late return fee of $5 per day"
-  ],
-  owner: {
-    name: "Sarah Chen",
-    avatar: "/placeholder.svg?key=sarah",
-    rating: 4.9,
-    reviewCount: 23,
-    verified: true
-  }
-}
+const error = ref(null)
 
 // Methods
 const getInitials = (name) => {
@@ -291,11 +249,77 @@ const sendMessage = () => {
   router.push('/messages')
 }
 
-// Load item data
-onMounted(() => {
-  setTimeout(() => {
-    item.value = mockItem
+// Fetch item data from Firebase
+const fetchItemData = async (itemId) => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    console.log('Fetching item with ID:', itemId)
+    
+    // Fetch item from Firebase
+    const itemDoc = doc(db, 'listings', itemId)
+    const itemSnap = await getDoc(itemDoc)
+    
+    if (itemSnap.exists()) {
+      const itemData = itemSnap.data()
+      console.log('Item data from Firebase:', itemData)
+      
+      // Transform Firebase data to match component expectations
+      item.value = {
+        id: itemSnap.id,
+        title: itemData.title || itemData.name,
+        description: itemData.description || 'No description available',
+        price: itemData.price || 0,
+        period: itemData.period || itemData.pricePer || 'day',
+        category: itemData.category || 'Other',
+        condition: itemData.condition || 'Good',
+        location: itemData.location || 'Location not specified',
+        postedAt: itemData.createdAt ? 
+          new Date(itemData.createdAt.seconds * 1000).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+          }) : 'Recently posted',
+        available: itemData.status === 'active' || itemData.available !== false,
+        images: itemData.images && itemData.images.length > 0 ? itemData.images : ['/placeholder.jpg'],
+        specifications: itemData.specifications || {},
+        rentalTerms: itemData.rentalTerms || [
+          'Item must be returned in the same condition',
+          'No damage or misuse allowed',
+          'Late return fees may apply'
+        ],
+        owner: {
+          id: itemData.ownerId,
+          name: itemData.ownerName || 'Anonymous User',
+          avatar: itemData.ownerAvatar || '/placeholder-user.jpg',
+          rating: itemData.ownerRating || 4.5,
+          reviewCount: itemData.ownerReviewCount || 0,
+          verified: itemData.ownerVerified || false
+        }
+      }
+    } else {
+      error.value = 'Item not found'
+      console.log('No item found with ID:', itemId)
+    }
+  } catch (err) {
+    console.error('Error fetching item:', err)
+    error.value = 'Failed to load item details'
+  } finally {
     loading.value = false
-  }, 500)
+  }
+}
+
+// Load item data based on route parameter
+onMounted(() => {
+  const itemId = route.params.id
+  console.log('ItemDetailPage mounted with ID:', itemId)
+  
+  if (itemId) {
+    fetchItemData(itemId)
+  } else {
+    error.value = 'No item ID provided'
+    loading.value = false
+  }
 })
 </script>

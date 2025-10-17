@@ -13,6 +13,28 @@
 
       <AuthTabs />
 
+      <!-- Features List -->
+      <div class="mt-8 space-y-4">
+        <div class="flex items-center gap-3 text-slate-700">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <span class="text-black text-lg font-bold">✓</span>
+          </div>
+          <span class="font-medium text-sm">Student-verified community</span>
+        </div>
+        <div class="flex items-center gap-3 text-slate-700">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <span class="text-black text-lg font-bold">✓</span>
+          </div>
+          <span class="font-medium text-sm">Secure messaging & transactions</span>
+        </div>
+        <div class="flex items-center gap-3 text-slate-700">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <span class="text-black text-lg font-bold">✓</span>
+          </div>
+          <span class="font-medium text-sm">Save up to 70% on textbooks</span>
+        </div>
+      </div>
+
       <div class="mt-6 text-center">
         <p class="text-sm text-muted-foreground">
           New to PeerSwap?

@@ -38,7 +38,7 @@
 
     <button
       type="submit"
-      class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition"
+      class="w-full bg-primary text-primary-foreground py-2 rounded-md transition-all duration-300 transform hover:bg-orange-600 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/25 active:scale-95"
     >
       Create Account
     </button>

@@ -239,7 +239,7 @@
     <!-- Footer -->
     <footer class="bg-gray-900 text-gray-300 py-12">
       <div class="container mx-auto px-4">
-        <div class="grid md:grid-cols-4 gap-8">
+        <div class="grid md:grid-cols-2 gap-8">
           <div>
             <div class="flex items-center gap-2 mb-4">
               <div class="h-8 w-8 rounded-lg bg-orange-500 flex items-center justify-center">
@@ -258,23 +258,6 @@
               <li><router-link to="/browse" class="hover:text-orange-400">Browse Items</router-link></li>
               <li><router-link to="/auth/register" class="hover:text-orange-400">Sign Up</router-link></li>
               <li><router-link to="/auth/login" class="hover:text-orange-400">Sign In</router-link></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h5 class="font-semibold text-white mb-4">Support</h5>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#" class="hover:text-orange-400">Help Center</a></li>
-              <li><a href="#" class="hover:text-orange-400">Contact Us</a></li>
-              <li><a href="#" class="hover:text-orange-400">Safety Guidelines</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h5 class="font-semibold text-white mb-4">Legal</h5>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#" class="hover:text-orange-400">Privacy Policy</a></li>
-              <li><a href="#" class="hover:text-orange-400">Terms of Service</a></li>
             </ul>
           </div>
         </div>
