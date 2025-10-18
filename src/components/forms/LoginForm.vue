@@ -82,11 +82,22 @@ async function loginUser() {
   
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
-    
+    const user = userCredential.user
+
+    if (!user.emailVerified) {
+      try {
+        // resend verification email
+        await sendEmailVerification(user)
+      } catch (e) {
+        console.error('Failed to resend verification:', e)
+      }
+      // sign out so they cannot proceed
+      await signOut(auth)
+      alert('Email not verified. A verification email has been (re)sent — please verify before logging in.')
+      return
+    }
     // Emit login success event
-    emit('loginSuccess', userCredential.user)
-    
-    // ✅ Redirect to browse after successful login
+    emit('loginSuccess', user)
     router.push('/browse')
   } catch (error) {
     console.error('Login failed:', error.message)
