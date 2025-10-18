@@ -1,39 +1,24 @@
 <template>
   <div class="min-h-screen bg-background">
-    <!-- Header -->
-    <header class="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div class="container mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <Button variant="ghost" size="sm" as-child>
-              <router-link :to="`/item/${itemId}`">
-                <ArrowLeft class="h-4 w-4 mr-2" />
-                Back to Item
-              </router-link>
-            </Button>
-            <div class="flex items-center gap-2">
-              <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span class="text-primary-foreground font-bold text-sm">PS</span>
-              </div>
-              <h1 class="text-xl font-bold text-foreground">PeerSwap</h1>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" as-child>
-            <router-link to="/profile">Profile</router-link>
-          </Button>
-        </div>
-      </div>
-    </header>
-
+    <div class="container mx-auto px-10 pt-4 pb-2">
+      <Button variant="ghost" size="sm" as-child class="border border-gray-600 mb-4">
+        <router-link :to="`/item/${itemId}`" class="flex items-center font-bold">
+          <ArrowLeftCircleIcon class="mr-2"/> Back to Item
+        </router-link>
+      </Button>
+    </div>
     <!-- Loading -->
     <div v-if="loading" class="container mx-auto px-4 py-6 text-center">
-      <p>Loading item details...</p>
+      <div class="flex flex-col items-center justify-center min-h-[400px]">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p>Loading item details...</p>
+      </div>
     </div>
 
     <!-- Content -->
     <div v-else-if="item" class="container mx-auto px-4 py-6 max-w-4xl">
-      <div class="mb-8">
-        <h2 class="text-3xl font-bold text-foreground mb-2">Request Rental</h2>
+      <div class="mb-8 border-0 shadow-lg bg-stone-200 rounded-lg text-center py-2">
+        <h2 class="text-3xl font-bold text-slate-900 mb-2">Request Rental</h2>
         <p class="text-muted-foreground">Send a rental request to the item owner</p>
       </div>
 
@@ -41,7 +26,7 @@
         <!-- Form Column -->
         <div class="lg:col-span-2 space-y-6">
           <!-- Item Summary -->
-          <Card>
+          <Card class="border-0 shadow-lg bg-stone-100">
             <CardHeader>
               <CardTitle>Item Details</CardTitle>
             </CardHeader>
@@ -66,7 +51,7 @@
           </Card>
 
           <!-- Owner Info -->
-          <Card>
+          <Card class="border-0 shadow-lg bg-stone-100">
             <CardHeader>
               <CardTitle>Item Owner</CardTitle>
             </CardHeader>
@@ -87,7 +72,7 @@
           </Card>
 
           <!-- Rental Details Form -->
-          <Card>
+          <Card class="border-0 shadow-lg bg-stone-100">
             <CardHeader>
               <CardTitle>Rental Details</CardTitle>
               <CardDescription>Specify your rental duration and message</CardDescription>
@@ -131,21 +116,14 @@
 
               <div class="space-y-2">
                 <Label for="message">Message to Owner</Label>
-                <Textarea
-                  id="message"
-                  v-model="message"
-                  placeholder="Introduce yourself and explain why you need this item."
-                  :rows="4"
-                  maxlength="500"
-                />
+                <Textarea id="message" v-model="message" placeholder="Introduce yourself and explain why you need this item." :rows="4" maxlength="500"/>
                 <p class="text-xs text-muted-foreground">{{ message.length }}/500 characters</p>
               </div>
             </CardContent>
           </Card>
         </div>
-
         <!-- Summary Column -->
-        <div class="lg:col-span-1">
+        <div class="border-0 shadow-lg bg-amber-50">
           <Card class="sticky top-24">
             <CardHeader>
               <CardTitle>Rental Summary</CardTitle>
@@ -201,18 +179,19 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // UI Components
-import { Calendar, Shield, ArrowLeft, Clock } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
+import Navbar from '@/components/Navbar.vue'
+import { Calendar, Shield, ArrowLeft, Clock, ArrowLeftCircleIcon } from 'lucide-vue-next'
+import Button from '@/components/ui/button.vue'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card.vue'
+import Input from '@/components/ui/input.vue'
+import Label from '@/components/ui/Label.vue'
+import Textarea from '@/components/ui/TextArea.vue'
+import Badge from '@/components/ui/Badge.vue'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
+import { Separator } from '@/components/ui/Separator.vue'
 
 // Firebase
-import { auth, db } from '@/firebase'
+import { auth, db } from '@/firebase/config'
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 // Router & State

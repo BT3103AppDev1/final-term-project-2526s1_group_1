@@ -7,7 +7,6 @@
         <p class="text-slate-600 text-lg">Loading profile...</p>
       </div>
     </div>
-
     <!-- Error State -->
     <div v-else-if="error" class="container mx-auto px-4 py-12">
       <div class="max-w-md mx-auto text-center">
@@ -61,12 +60,10 @@
               <!-- Profile Header -->
               <div class="text-center mb-6">
                 <div class="relative inline-block mb-4">
-                  <Avatar class="h-28 w-28 mx-auto ring-4 ring-white shadow-lg">
-                    <AvatarImage :src="user.avatar" />
-                    <AvatarFallback class="text-xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {{ getInitials(user.name) }}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div class="h-28 w-28 mx-auto ring-4 ring-white shadow-lg rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <img v-if="user.avatar" :key="`avatar-${user.id}-${user.avatar}`" :src="user.avatar" class="w-full h-full object-cover" alt="Profile picture" @error="handleImageError"/>
+                    <span v-else class="text-white text-2xl font-bold"> {{ getInitials(user.name) }}</span>
+                  </div>
                   <div v-if="user.verified" class="absolute -bottom-1 -right-1 h-8 w-8 bg-green-500 rounded-full flex items-center justify-center ring-4 ring-white">
                     <Shield class="h-4 w-4 text-white" />
                   </div>
@@ -592,7 +589,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Star,
@@ -681,7 +678,10 @@ const mockUserItems = [
     favorites: 3,
   },
 ]
-
+const handleImageError = (event) => {
+  console.error('Image failed to load:', event.target.src)
+  event.target.style.display = 'none'
+}
 const mockReviews = [
   {
     id: "1",
@@ -823,7 +823,20 @@ const loadUserReviews = async (userId = null) => {
     reviewsLoading.value = false
   }
 }
+const unwatch = watch(() => route.fullPath, async (newPath) => {
+  if (newPath === '/profile') {
+    console.log('Profile route activated, reloading data...')
+    if (profileUserId.value) {
+      await getUserProfileById(profileUserId.value)
+    } else {
+      await loadUserProfile()
+    }
+  }
+})
 
+onBeforeUnmount(() => {
+  unwatch()
+})
 // Debug function for tabs
 const debugTabChange = (tabValue) => {
   console.log('Tab changed to:', tabValue)

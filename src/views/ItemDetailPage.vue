@@ -242,6 +242,7 @@ const toggleSave = () => {
 
 const requestRental = () => {
   console.log('Requesting rental for:', item.value.title)
+  router.push(`/request-rental/${item.value.id}`)
 }
 
 const sendMessage = () => {

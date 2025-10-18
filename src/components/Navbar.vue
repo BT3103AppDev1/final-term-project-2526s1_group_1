@@ -26,6 +26,7 @@
       <!-- User Profile Dropdown -->
       <div v-else class="profile-dropdown" @click="toggleDropdown">
         <img 
+          :key="`navbar-avatar-${userProfile?.profileImageUrl || 'default'}`"
           :src="userProfileImage || defaultProfileImage" 
           alt="Profile" 
           class="profile-icon"
@@ -89,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
@@ -111,7 +112,9 @@ const defaultProfileImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhla
 
 // Computed
 const userProfileImage = computed(() => {
-  return userProfile.value?.profileImageUrl || defaultProfileImage
+  const imageUrl = userProfile.value?.profileImageUrl || defaultProfileImage
+  console.log('Navbar using image:', imageUrl) // DEBUG
+  return imageUrl
 })
 
 // Methods
@@ -145,13 +148,19 @@ const loadUserProfile = async (userId) => {
     
     if (userDoc.exists()) {
       userProfile.value = userDoc.data()
+      console.log('Navbar loaded profile:', userProfile.value)//debug
     }
   } catch (error) {
     console.error('Error loading user profile:', error)
   }
 }
 
-// Close dropdown when clicking outside
+watch(() => router.currentRoute.value.path, async (newPath) => {
+  if (newPath === '/profile' && uid.value) {
+    await loadUserProfile(uid.value)
+  }
+})
+
 const handleClickOutside = (event) => {
   if (!event.target.closest('.profile-dropdown')) {
     dropdownOpen.value = false
