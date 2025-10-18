@@ -38,7 +38,7 @@
 
     <button
       type="submit"
-      class="w-full bg-primary text-primary-foreground py-2 rounded-md transition-all duration-300 transform hover:bg-orange-600 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/25 active:scale-95"
+      class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition"
     >
       Create Account
     </button>
@@ -48,7 +48,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth'
 
 const name = ref('')
 const email = ref('')
@@ -56,16 +56,34 @@ const password = ref('')
 const router = useRouter()
 const auth = getAuth()
 
+const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'u.nus.edu']
+function isSchoolEmail(email) {
+  if(!email) return false
+  const parts = email.toLowerCase().split('@')
+  if(parts.length !== 2) return false
+  return allowedDomains.includes(parts[1])
+}
+
 async function registerUser() {
+  if (!isSchoolEmail(email.value)) {
+    alert('Please use a valid email from the allowed domains: ' + allowedDomains.join(', '))
+    return
+  }
+
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value)
     const user = userCredential.user
 
-    // ✅ Update Firebase user profile with display name
+    // Update Firebase user profile with display name
     await updateProfile(user, { displayName: name.value })
 
-    // ✅ Redirect to browse page
-    router.push('/browse')
+    await sendEmailVerification(user)
+
+    // force sign out so the user can't use app until they verify
+    await signOut(auth)
+    
+    alert('Registration successful. A verification email was sent — please verify before logging in.')
+    router.push('/')
   } catch (error) {
     console.error('Registration failed:', error.message)
     alert('Registration failed: ' + error.message)

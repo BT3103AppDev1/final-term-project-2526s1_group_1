@@ -1,67 +1,38 @@
 <template>
   <div class="rentals-page p-6 max-w-6xl mx-auto">
     <h1 class="text-2xl font-semibold mb-6 text-center">My Rentals</h1>
-
     <div v-if="loading" class="text-center text-gray-500">Loading your rentals...</div>
-
     <div v-else>
-      <!-- Borrowed Section -->
-      <section class="mb-10">
-        <h2 class="text-xl font-medium mb-3 text-blue-700">Borrowed Items</h2>
+      <!--Borrowed Items-->
+      <section class="mb-10 text-center bg-slate-300 rounded-3xl p-4">
+        <h2 class="text-xl font-bold mb-3 text-blue-700">Borrowed Items</h2>
         <div v-if="borrowedItems.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <div
-            v-for="rental in borrowedItems"
-            :key="rental.id"
-            class="bg-white p-4 rounded-xl shadow hover:shadow-md transition"
-          >
-            <img
-              v-if="rental.photoUrl"
-              :src="rental.photoUrl"
-              alt="item"
-              class="h-40 w-full object-cover rounded-lg mb-3"
-            />
+          <div v-for="rental in borrowedItems" :key="rental.id" class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+            <img v-if="rental.photoUrl" :src="rental.photoUrl" alt="item"class="h-40 w-full object-cover rounded-lg mb-3"/>
             <h3 class="text-lg font-semibold mb-1">{{ rental.title }}</h3>
             <p class="text-gray-600 text-sm mb-2">
-              Lender: {{ rental.lenderName || 'N/A' }}<br />
+              Lender: {{rental.lenderName||'N/A'}}<br />
               Status:
               <span
                 :class="{
                   'text-yellow-600': rental.status === 'Pending',
                   'text-green-600': rental.status === 'Approved',
                   'text-gray-600': rental.status === 'Completed',
-                  'text-red-600': rental.status === 'Cancelled'
+                  'text-red-600': rental.status === 'Cancelled' || rental.status === 'Rejected'
                 }"
                 class="font-medium"
               >
-                {{ rental.status }}
+                {{rental.status}}
               </span>
             </p>
 
             <div v-if="rental.status === 'Completed' && !rental.borrowerRating">
-              <h4 class="text-sm font-semibold mb-1">Rate this transaction:</h4>
-              <div class="flex space-x-1 mb-2">
-                <span
-                  v-for="star in 5"
-                  :key="star"
-                  class="cursor-pointer text-xl"
-                  :class="star <= rental.tempRating ? 'text-yellow-400' : 'text-gray-300'"
-                  @click="setTempRating(rental, star)"
-                >★</span>
-              </div>
-              <textarea
-                v-model="rental.tempReview"
-                placeholder="Write a short review..."
-                class="w-full border rounded-md p-2 mb-2 text-sm"
-                rows="2"
-              ></textarea>
-              <button
-                class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm"
-                @click="submitRating(rental)"
-              >
+              <h4 class="text-sm font-semibold mb-1">Feedback on Item/Renter!</h4>
+              <textarea v-model="rental.tempReview" placeholder="Your Review" class="w-full border rounded-md p-2 mb-2 text-sm"rows="2"></textarea>
+              <button class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm"@click="submitRating(rental)">
                 Submit
               </button>
             </div>
-
             <router-link
               :to="`/item/${rental.itemId}`"
               class="text-blue-500 hover:underline text-sm"
@@ -69,28 +40,44 @@
             >
           </div>
         </div>
-        <p v-else class="text-gray-500">You haven’t borrowed anything yet.</p>
+        <p v-else class="text-gray-500">You haven't borrowed anything yet.</p>
       </section>
-
-      <!-- Lent Section -->
-      <section>
-        <h2 class="text-xl font-medium mb-3 text-green-700">My Listed Items</h2>
+      <!--Rental Requests-->
+      <section class="mb-10 text-center bg-[#dbcabd] rounded-3xl p-4">
+        <h2 class="text-xl font-bold mb-3 text-orange-700">Rental Requests</h2>
+        <div v-if="rentalRequests.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div v-for="request in rentalRequests" :key="request.id"class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+            <img v-if="request.photoUrl" :src="request.photoUrl" alt="item"class="h-40 w-full object-cover rounded-lg mb-3"/>
+            <h3 class="text-lg font-semibold mb-1">{{ request.title }}</h3>
+            <p class="text-gray-600 text-sm mb-2">Requested by: {{ request.borrowerName }}<br />
+              Duration: {{ request.duration }} week(s)<br />
+              Start Date: {{ request.startDate }}<br />
+              Total: ${{ request.totalCost }}
+            </p>
+            <p class="text-gray-700 text-sm mb-3">{{ request.message }}</p>
+            
+            <div class="flex gap-2">
+              <button @click="acceptRequest(request.id)" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 text-sm">
+                Accept
+              </button>
+              <button @click="rejectRequest(request.id)" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+        <p v-else class="text-gray-500">No rental requests yet.</p>
+      </section>
+      <!--My Listed Items-->
+      <section class="mb-10 text-center bg-[#c6dcc7] rounded-3xl p-4">
+        <h2 class="text-xl font-bold mb-3 text-green-700">My Listed Items</h2>
         <div v-if="lentItems.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <div
-            v-for="listing in lentItems"
-            :key="listing.id"
-            class="bg-white p-4 rounded-xl shadow hover:shadow-md transition"
-          >
-            <img
-              v-if="listing.images && listing.images.length > 0"
-              :src="listing.images[0]"
-              alt="item"
-              class="h-40 w-full object-cover rounded-lg mb-3"
-            />
-            <h3 class="text-lg font-semibold mb-1">{{ listing.name }}</h3>
+          <div v-for="listing in lentItems" :key="listing.id" class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+            <img v-if="listing.images && listing.images.length > 0":src="listing.images[0]"alt="item"class="h-40 w-full object-cover rounded-lg mb-3"/>
+            <h3 class="text-lg font-semibold mb-1">{{listing.name}}</h3>
             <p class="text-gray-600 text-sm mb-2">
-              Price: ${{ listing.price }}/{{ listing.pricePer || 'day' }}<br />
-              Category: {{ listing.category }}<br />
+              Price: ${{listing.price}}/{{listing.pricePer||'day'}}<br />
+              Category: {{listing.category}}<br />
               Status:
               <span
                 :class="{
@@ -100,112 +87,83 @@
                 }"
                 class="font-medium"
               >
-                {{ listing.status || 'Available' }}
+                {{ listing.status||'Available' }}
               </span>
             </p>
             <p class="text-gray-700 text-sm mb-3">{{ listing.description || 'No description available' }}</p>
-
             <div class="flex gap-2">
-              <router-link
-                :to="`/item/${listing.id}`"
-                class="text-blue-500 hover:underline text-sm"
-              >
+              <router-link :to="`/item/${listing.id}`"class="text-blue-500 hover:underline text-sm">
                 View Item
               </router-link>
-              <button
-                class="text-green-500 hover:underline text-sm"
-                @click="editListing(listing.id)"
-              >
+              <button class="text-green-500 hover:underline text-sm"@click="editListing(listing.id)">
                 Edit
               </button>
             </div>
           </div>
         </div>
-        <p v-else class="text-gray-500">You haven’t lent out any items yet.</p>
+        <p v-else class="text-gray-500">You haven't lent out any items yet.</p>
       </section>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { auth, db } from '@/firebase/config'
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  updateDoc,
-  serverTimestamp
-} from 'firebase/firestore'
+import {ref, onMounted} from 'vue'
+import {auth, db} from '@/firebase/config'
+import {collection,query,where,getDocs,doc,updateDoc,serverTimestamp} from 'firebase/firestore'
 
 const borrowedItems = ref([])
 const lentItems = ref([])
 const loading = ref(true)
+const rentalRequests = ref([])
 
 const fetchRentals = async () => {
   const user = auth.currentUser
   if (!user) {
-    console.log('No authenticated user found')
     loading.value = false
     return
   }
-
-  try {
-    console.log('Fetching rentals for user:', user.uid)
-
-    // Fetch Borrowed Items (rental transactions where user is borrower)
-    const borrowedQuery = query(
-      collection(db, 'requests'), 
-      where('borrowerId', '==', user.uid)
-    )
-    const borrowedSnap = await getDocs(borrowedQuery)
-    borrowedItems.value = borrowedSnap.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      tempRating: 0,
-      tempReview: ''
-    }))
-
-    // Fetch Lent Items (listings created by user)
-    const lentQuery = query(
-      collection(db, 'listings'), 
-      where('ownerId', '==', user.uid)
-    )
-    const lentSnap = await getDocs(lentQuery)
-    lentItems.value = lentSnap.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data() 
-    }))
-
-    console.log('Borrowed items:', borrowedItems.value.length)
-    console.log('Lent items (your listings):', lentItems.value.length)
-    console.log('Lent items data:', lentItems.value)
-
-  } catch (err) {
-    console.error('Error fetching rentals:', err)
-  } finally {
-    loading.value = false
-  }
+  const borrowedQuery = query(//fetch borrowed items
+    collection(db, 'rentals'), 
+    where('borrowerId', '==', user.uid)
+  )
+  const borrowedSnap = await getDocs(borrowedQuery)
+  borrowedItems.value = borrowedSnap.docs.map(doc => ({ id: doc.id,...doc.data()
+  }))
+  const requestsQuery = query(//fetch rent req from others
+    collection(db, 'rentals'), 
+    where('lenderId', '==', user.uid),
+    where('status', '==', 'Pending')
+  )
+  const requestsSnap = await getDocs(requestsQuery)
+  rentalRequests.value = requestsSnap.docs.map(doc => ({id: doc.id,...doc.data()
+  }))
+  const lentQuery = query(//fetch listed items
+    collection(db, 'listings'), 
+    where('ownerId', '==', user.uid)
+  )
+  const lentSnap = await getDocs(lentQuery)
+  lentItems.value = lentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() 
+  }))
+  loading.value = false
 }
-
-const updateStatus = async (rental, newStatus) => {
-  try {
-    await updateDoc(doc(db, 'rentals', rental.id), { status: newStatus })
-    rental.status = newStatus
-    alert(`Status updated to ${newStatus}`)
-  } catch (err) {
-    console.error('Error updating status:', err)
-  }
+const acceptRequest = async (requestId)=> {
+    await updateDoc(doc(db, 'rentals', requestId), { 
+      status:'Approved',
+      approvedAt: serverTimestamp()
+    })
+    rentalRequests.value = rentalRequests.value.filter(req =>req.id !== requestId)
+    alert('Rental request accepted!')
 }
-
-const setTempRating = (rental, value) => {
-  rental.tempRating = value
+const rejectRequest = async (requestId) => {
+    await updateDoc(doc(db, 'rentals', requestId), { 
+      status:'Rejected',
+      rejectedAt:serverTimestamp()
+    })
+    rentalRequests.value = rentalRequests.value.filter(req =>req.id !== requestId)
+    alert('Rental request rejected.')
 }
-
 const submitRating = async (rental) => {
-  try {
     await updateDoc(doc(db, 'rentals', rental.id), {
       borrowerRating: rental.tempRating,
       borrowerReview: rental.tempReview,
@@ -214,27 +172,14 @@ const submitRating = async (rental) => {
     rental.borrowerRating = rental.tempRating
     rental.borrowerReview = rental.tempReview
     alert('Thank you for your feedback!')
-  } catch (err) {
-    console.error('Error submitting rating:', err)
-  }
 }
-
 const editListing = (listingId) => {
-  // Navigate to edit page - you can implement this later
   console.log('Editing listing:', listingId)
-  // For now, just log the action
   alert('Edit functionality coming soon!')
 }
-
 onMounted(fetchRentals)
 </script>
 
 <style scoped>
-.rentals-page {
-  background-color: #f8fafc;
-  min-height: 100vh;
-}
-button {
-  transition: all 0.2s ease-in-out;
-}
+.rentals-page {background-color: #f8fafc;min-height: 100vh;}
 </style>

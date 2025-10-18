@@ -26,7 +26,7 @@
 
     <button
       type="submit"
-      class="w-full bg-primary text-primary-foreground py-2 rounded-md transition-all duration-300 transform hover:bg-orange-600 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/25 active:scale-95"
+      class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition"
       :disabled="loading"
     >
       <span v-if="loading">Signing In...</span>
@@ -50,7 +50,7 @@
       <button
         type="button"
         @click="$emit('changeToRegister')"
-        class="text-orange-600 hover:text-orange-700 underline ml-1 font-medium"
+        class="text-primary hover:text-primary/80 underline ml-1"
       >
         Sign up
       </button>
@@ -82,11 +82,22 @@ async function loginUser() {
   
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
-    
+    const user = userCredential.user
+
+    if (!user.emailVerified) {
+      try {
+        // resend verification email
+        await sendEmailVerification(user)
+      } catch (e) {
+        console.error('Failed to resend verification:', e)
+      }
+      // sign out so they cannot proceed
+      await signOut(auth)
+      alert('Email not verified. A verification email has been (re)sent — please verify before logging in.')
+      return
+    }
     // Emit login success event
-    emit('loginSuccess', userCredential.user)
-    
-    // ✅ Redirect to browse after successful login
+    emit('loginSuccess', user)
     router.push('/browse')
   } catch (error) {
     console.error('Login failed:', error.message)

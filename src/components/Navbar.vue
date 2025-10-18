@@ -7,7 +7,6 @@
         <span class="logo-text">PeerSwap</span>
       </div>
     </router-link>
-
     <!-- Navigation Links -->
     <div class="link-button-container">
       <div class="nav-links">
@@ -16,48 +15,31 @@
         <router-link v-if="isLoggedIn" to="/rentals" class="nav-link">My Rentals</router-link>
         <router-link v-if="isLoggedIn" to="/messages" class="nav-link">Messages</router-link>
       </div>
-
       <!-- Authentication Section -->
       <div v-if="!isLoggedIn" class="login-register-buttons">
         <router-link to="/auth/login" class="auth-button login-btn">Login</router-link>
         <router-link to="/auth/register" class="auth-button register-btn">Register</router-link>
       </div>
-
       <!-- User Profile Dropdown -->
       <div v-else class="profile-dropdown" @click="toggleDropdown">
-        <img 
-          :key="`navbar-avatar-${userProfile?.profileImageUrl || 'default'}`"
-          :src="userProfileImage || defaultProfileImage" 
-          alt="Profile" 
-          class="profile-icon"
-        />
+        <img :key="`navbar-avatar-${userProfile?.profileImageUrl || 'default'}`"
+          :src="userProfileImage || defaultProfileImage" alt="Profile" class="profile-icon"/>
         <div v-if="dropdownOpen" class="dropdown-content" @click.stop>
-          <router-link 
-            to="/profile" 
-            class="dropdown-option"
-            @click="closeDropdown"
-          >
+          <router-link to="/profile" class="dropdown-option" @click="closeDropdown">
             <svg class="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
             Your Profile
           </router-link>
           
-          <router-link 
-            to="/list-item" 
-            class="dropdown-option"
-            @click="closeDropdown"
-          >
+          <router-link to="/list-item" class="dropdown-option"@click="closeDropdown">
             <svg class="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
             </svg>
             List New Item
           </router-link>
           
-          <router-link 
-            to="/rentals" 
-            class="dropdown-option"
-            @click="closeDropdown"
+          <router-link to="/rentals" class="dropdown-option" @click="closeDropdown"
           >
             <svg class="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
@@ -66,11 +48,7 @@
           </router-link>
           
           <div class="dropdown-divider"></div>
-          
-          <button 
-            @click="logout" 
-            class="dropdown-option logout-option"
-          >
+          <button @click="logout" class="dropdown-option logout-option">
             <svg class="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
               <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
             </svg>
@@ -79,7 +57,6 @@
         </div>
       </div>
     </div>
-
     <!-- Mobile Menu Toggle (for future mobile responsiveness) -->
     <button class="mobile-menu-toggle" @click="toggleMobileMenu">
       <svg viewBox="0 0 24 24" fill="currentColor">
@@ -106,87 +83,45 @@ const dropdownOpen = ref(false)
 const mobileMenuOpen = ref(false)
 const uid = ref('')
 const userProfile = ref(null)
-
 // Default profile image
 const defaultProfileImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiNmNTllMGIiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTIgMTJjMi4yMSAwIDQtMS43OSA0LTRzLTEuNzktNC00LTQtNCAxLjc5LTQgNCAxLjc5IDQgNCA0em0wIDJjLTIuNjcgMC04IDEuMzQtOCA0djJoMTZ2LTJjMC0yLjY2LTUuMzMtNC04LTR6Ii8+Cjwvc3ZnPgo8L3N2Zz4K'
-
 // Computed
 const userProfileImage = computed(() => {
   const imageUrl = userProfile.value?.profileImageUrl || defaultProfileImage
-  console.log('Navbar using image:', imageUrl) // DEBUG
   return imageUrl
 })
-
-// Methods
-const toggleDropdown = () => {
-  dropdownOpen.value = !dropdownOpen.value
-}
-
-const closeDropdown = () => {
-  dropdownOpen.value = false
-}
-
-const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value
-}
-
+const toggleDropdown = () => {dropdownOpen.value = !dropdownOpen.value}
+const closeDropdown = () => {dropdownOpen.value = false}
+const toggleMobileMenu = () => {mobileMenuOpen.value = !mobileMenuOpen.value}
 const logout = async () => {
-  try {
     await signOut(auth)
     dropdownOpen.value = false
     router.push('/')
-  } catch (error) {
-    console.error('Logout error:', error)
-  }
 }
-
-// Load user profile data
 const loadUserProfile = async (userId) => {
-  try {
     const userDocRef = doc(db, "User Information", userId)
     const userDoc = await getDoc(userDocRef)
-    
-    if (userDoc.exists()) {
-      userProfile.value = userDoc.data()
-      console.log('Navbar loaded profile:', userProfile.value)//debug
-    }
-  } catch (error) {
-    console.error('Error loading user profile:', error)
-  }
+    if (userDoc.exists()) {userProfile.value = userDoc.data()}
 }
-
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.profile-dropdown')) {dropdownOpen.value = false}
+}
 watch(() => router.currentRoute.value.path, async (newPath) => {
   if (newPath === '/profile' && uid.value) {
     await loadUserProfile(uid.value)
   }
 })
-
-const handleClickOutside = (event) => {
-  if (!event.target.closest('.profile-dropdown')) {
-    dropdownOpen.value = false
-  }
-}
-
-// Lifecycle
 onMounted(() => {
-  // Listen for auth state changes
-  onAuthStateChanged(auth, async (user) => {
+  onAuthStateChanged(auth, async (user) => {//listen for auth state changes
     if (user) {
       isLoggedIn.value = true
       uid.value = user.uid
       await loadUserProfile(user.uid)
-    } else {
-      isLoggedIn.value = false
-      uid.value = ''
-      userProfile.value = null
     }
   })
-
-  // Add click outside listener
   document.addEventListener('click', handleClickOutside)
 })
 </script>
-
 <style scoped>
 .navbar {
   display: flex;
