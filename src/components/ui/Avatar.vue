@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, h, ref, watch } from 'vue'
 
 // Avatar component
 export const Avatar = defineComponent({
@@ -36,6 +36,11 @@ export const AvatarImage = defineComponent({
   setup(props, { emit }) {
     const hasError = ref(false)
     
+    // Reset error when src changes
+    watch(() => props.src, () => {
+      hasError.value = false
+    })
+    
     const handleError = () => {
       hasError.value = true
       emit('error')
@@ -47,7 +52,7 @@ export const AvatarImage = defineComponent({
       return h('img', {
         src: props.src,
         alt: props.alt,
-        class: ['aspect-square h-full w-full', props.class].filter(Boolean).join(' '),
+        class: ['aspect-square h-full w-full object-cover', props.class].filter(Boolean).join(' '),
         onError: handleError
       })
     }
@@ -71,7 +76,6 @@ export const AvatarFallback = defineComponent({
   }
 })
 
-// Default export for easier importing
 export default {
   Avatar,
   AvatarImage,

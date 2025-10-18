@@ -133,7 +133,6 @@
               </Button>
             </CardContent>
           </Card>
-
           <!-- Owner Card -->
           <Card class="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
             <CardHeader>
@@ -159,7 +158,7 @@
                   </div>
                 </div>
               </div>
-              <Button variant="outline" class="w-full" size="sm">
+              <Button variant="outline" class="w-full" size="sm" @click="router.push(`/profile/${item.owner.id}`)">
                 View Profile
               </Button>
             </CardContent>

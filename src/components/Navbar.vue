@@ -32,7 +32,7 @@
         />
         <div v-if="dropdownOpen" class="dropdown-content" @click.stop>
           <router-link 
-            :to="`/profile/${uid}`" 
+            to="/profile" 
             class="dropdown-option"
             @click="closeDropdown"
           >

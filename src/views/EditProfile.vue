@@ -52,12 +52,12 @@
               <!-- Profile Picture Section -->
               <div class="text-center">
                 <div class="relative inline-block mb-6">
-                  <Avatar class="h-32 w-32 mx-auto ring-4 ring-white shadow-lg">
-                    <AvatarImage :src="formData.avatar || user.avatar" />
-                    <AvatarFallback class="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <div class="h-32 w-32 mx-auto ring-4 ring-white shadow-lg rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <img v-if="formData.avatar" :key="formData.avatar" :src="formData.avatar" class="w-full h-full object-cover" alt="Profile picture"/>
+                    <span v-else class="text-white text-2xl font-bold">
                       {{ getInitials(formData.name || user.name) }}
-                    </AvatarFallback>
-                  </Avatar>
+                    </span>
+                  </div>
                   <button
                     type="button"
                     @click="triggerFileUpload"
@@ -239,11 +239,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { doc, updateDoc } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { db, storage } from '@/firebase.js'
+import { db, storage } from '@/firebase/config'
 import { ArrowLeft, Camera } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent } from '@/components/ui/Card.vue'
@@ -255,7 +255,7 @@ const { user, loading, loadUserProfile } = useUserProfile()
 
 const saving = ref(false)
 const fileInput = ref(null)
-
+const avatarTimestamp = ref(Date.now())
 // Form data
 const formData = reactive({
   name: '',
@@ -271,24 +271,24 @@ const formData = reactive({
 })
 
 // Initialize form data when user is loaded
-onMounted(async () => {
-  await loadUserProfile()
-  if (user.value) {
-    Object.assign(formData, {
-      name: user.value.name || '',
-      location: user.value.location || '',
-      shortBio: user.value.shortBio || '',
-      bio: user.value.bio || '',
-      skills: user.value.skills || '',
-      interests: user.value.interests || '',
-      linkedin: user.value.linkedin || '',
-      instagram: user.value.instagram || '',
-      telegram: user.value.telegram || '',
-      avatar: user.value.avatar || ''
-    })
-  }
-})
+watch(user, (newUser) =>{
+  if (newUser) {
+      formData.name= newUser.name || '',
+      formData.location= newUser.location || '',
+      formData.shortBio= newUser.shortBio || '',
+      formData.bio= newUser.bio || '',
+      formData.skills= newUser.skills || '',
+      formData.interests= newUser.interests || '',
+      formData.linkedin= newUser.linkedin || '',
+      formData.instagram =newUser.instagram || '',
+      formData.telegram = newUser.telegram || '',
+      formData.avatar=newUser.avatar || ''
+    }
+}, {immediate:true})
 
+onMounted(async () =>{
+  await loadUserProfile()
+})
 const getInitials = (name) => {
   if (!name) return '?'
   return name
@@ -308,21 +308,17 @@ const handleImageUpload = async (event) => {
 
   try {
     saving.value = true
-    
-    // Create a storage reference
-    const imageRef = storageRef(storage, `profile-pictures/${user.value.uid}/${Date.now()}_${file.name}`)
-    
-    // Upload the file
+    const imageRef = storageRef(storage, `profile-pictures/${user.value.id}/${Date.now()}_${file.name}`)
+    console.log('Uploading to:', imageRef.fullPath) // DEBUG
     const snapshot = await uploadBytes(imageRef, file)
-    
-    // Get the download URL
+    console.log('Upload complete:', snapshot) // DEBUG
     const downloadURL = await getDownloadURL(snapshot.ref)
-    
-    // Update form data
+    console.log('Download URL:', downloadURL) // DEBUG
     formData.avatar = downloadURL
-    
+    avatarTimestamp.value=Date.now()
+    console.log('formData.avatar updated:', formData.avatar) // DEBUG
   } catch (error) {
-    console.error('Error uploading image:', error)
+    console.error('Upload error:', error) // DEBUG
     alert('Failed to upload image. Please try again.')
   } finally {
     saving.value = false
@@ -330,35 +326,27 @@ const handleImageUpload = async (event) => {
 }
 
 const handleSubmit = async () => {
-  if (!user.value) return
-
+  if (!user.value?.id) return
   try {
     saving.value = true
-
-    // Update user profile in Firestore
-    const userRef = doc(db, 'users', user.value.uid)
+    
+    const userRef = doc(db, 'User Information', user.value.id)
     await updateDoc(userRef, {
       name: formData.name,
       location: formData.location,
       shortBio: formData.shortBio,
-      bio: formData.bio,
+      description: formData.bio,
       skills: formData.skills,
       interests: formData.interests,
       linkedin: formData.linkedin,
       instagram: formData.instagram,
       telegram: formData.telegram,
-      avatar: formData.avatar,
+      profileImageUrl: formData.avatar,
       updatedAt: new Date()
     })
-
-    // Show success message
     alert('Profile updated successfully!')
-    
-    // Navigate back to profile
     router.push('/profile')
-
   } catch (error) {
-    console.error('Error updating profile:', error)
     alert('Failed to update profile. Please try again.')
   } finally {
     saving.value = false
