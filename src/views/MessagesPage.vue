@@ -151,6 +151,12 @@
                         ]"
                       >
                         <p class="text-sm leading-relaxed">{{ message.text }}</p>
+                        <img 
+                          v-if="message.itemImage"
+                          :src="message.itemImage"
+                          alt="Item preview"
+                          class="mt-2 rounded-lg max-h-32 object-cover border border-slate-200"
+                        />
                       </div>
                       <p
                         :class="[
@@ -302,9 +308,11 @@ const selectConversation = (conversation) => {
     messages.value = msgs.map(m => ({
       id: m.id,
       text: m.text,
+      itemImage: m.itemImage || '',
       timestamp: m.createdAt?.toDate?.()?.toLocaleString() || '',
       isMe: m.senderId === currentUserId.value
     }))
+
     nextTick(() => {
       if (messagesContainer.value) {
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight

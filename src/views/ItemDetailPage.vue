@@ -248,6 +248,8 @@ const requestRental = () => {
 }
 
 const sendMessage = async () => {
+  console.log('Item passed to createConversation:', item.value)
+  console.log('Item images before sending:', item.value.images)
   if (!auth.currentUser) {
     alert('Please log in to message the owner')
     router.push('/login')
@@ -261,10 +263,10 @@ const sendMessage = async () => {
 
   try {
     const conversationId = await createConversation(
-      item.value.owner.id,
-      item.value.id,
-      item.value.title
-    )
+  item.value.owner.id,
+  JSON.parse(JSON.stringify(item.value))
+)
+
 
     router.push({
       name: 'messages',
