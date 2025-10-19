@@ -219,7 +219,7 @@ import {
 } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
-import Badge from '@/components/ui/Badge.vue'
+import Badge from '@/components/ui/badge.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
 const route = useRoute()
@@ -248,37 +248,34 @@ const requestRental = () => {
 }
 
 const sendMessage = async () => {
-  // Check if user is logged in
   if (!auth.currentUser) {
     alert('Please log in to message the owner')
     router.push('/login')
     return
   }
 
-  // Check if user is trying to message themselves
   if (auth.currentUser.uid === item.value.owner.id) {
     alert('You cannot message yourself!')
     return
   }
 
   try {
-    // Create or find existing conversation
     const conversationId = await createConversation(
       item.value.owner.id,
       item.value.id,
       item.value.title
     )
 
-    // Show success message
-    alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)
-    
-    // Redirect to messages page
-    router.push('/messages')
+    router.push({
+      name: 'messages',
+      query: { conversationId }
+    })
   } catch (error) {
     console.error('Error creating conversation:', error)
     alert('Failed to start conversation. Please try again.')
   }
 }
+
 
 // Fetch item data from Firebase
 const fetchItemData = async (itemId) => {

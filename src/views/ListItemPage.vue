@@ -329,7 +329,7 @@ import {
 import Input from '@/components/ui/input.vue'
 import Label from '@/components/ui/Label.vue'
 import Textarea from '@/components/ui/TextArea.vue'
-import Badge from '@/components/ui/Badge.vue'
+import Badge from '@/components/ui/badge.vue'
 import CustomSelect from '@/components/ui/select.vue'
 import { useListings } from '@/composables/useListings'
 
