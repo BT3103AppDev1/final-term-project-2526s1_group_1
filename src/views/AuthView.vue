@@ -104,17 +104,8 @@
           <!-- Footer Links -->
           <div v-if="currentView !== 'auth'" class="mt-8 pt-6 border-t border-gray-100">
             <div class="text-center space-y-3">
-              <!-- Auth Toggle Buttons -->
-              <div v-if="currentView === 'login'" class="space-y-2">
-                <button 
-                  @click="currentView = 'reset'"
-                  class="text-gray-500 hover:text-gray-700 text-sm transition-colors"
-                >
-                  Forgot your password?
-                </button>
-              </div>
 
-              <div v-else-if="currentView === 'register'">
+              <div v-if="currentView === 'register'">
                 <button 
                   @click="currentView = 'login'"
                   class="text-orange-600 hover:text-orange-700 font-medium text-sm transition-colors"

@@ -47,7 +47,7 @@ export function useMessages() {
           const data = docSnap.data()
           const otherUserId = data.participants.find(id => id !== currentUserId)
 
-          let userData = { name: 'Unknown', avatar: '/placeholder.svg', online: false }
+          let userData = { name: 'Unknown', avatar: '/placeholder.svg', online: false, lastSeen: null }
 
           if (otherUserId) {
             const userRef = doc(db, 'User Information', otherUserId)
@@ -57,7 +57,8 @@ export function useMessages() {
               userData = {
                 name: userInfo.name || 'Unknown User',
                 avatar: userInfo.avatar || '/placeholder.svg',
-                online: userInfo.online || false
+                online: userInfo.online || false,
+                lastSeen: userInfo.lastSeen || null
               }
             }
           }

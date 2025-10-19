@@ -206,7 +206,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
-import { db } from '@/firebase.js'
+import { db, auth } from '@/firebase.js'
+import { useMessages } from '@/composables/useMessages.js'
 import {
   MapPin,
   Star,
@@ -223,6 +224,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { createConversation, loading: messagesLoading } = useMessages()
 
 // State
 const item = ref(null)
@@ -245,8 +247,37 @@ const requestRental = () => {
   router.push(`/request-rental/${item.value.id}`)
 }
 
-const sendMessage = () => {
-  router.push('/messages')
+const sendMessage = async () => {
+  // Check if user is logged in
+  if (!auth.currentUser) {
+    alert('Please log in to message the owner')
+    router.push('/login')
+    return
+  }
+
+  // Check if user is trying to message themselves
+  if (auth.currentUser.uid === item.value.owner.id) {
+    alert('You cannot message yourself!')
+    return
+  }
+
+  try {
+    // Create or find existing conversation
+    const conversationId = await createConversation(
+      item.value.owner.id,
+      item.value.id,
+      item.value.title
+    )
+
+    // Show success message
+    alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)
+    
+    // Redirect to messages page
+    router.push('/messages')
+  } catch (error) {
+    console.error('Error creating conversation:', error)
+    alert('Failed to start conversation. Please try again.')
+  }
 }
 
 // Fetch item data from Firebase

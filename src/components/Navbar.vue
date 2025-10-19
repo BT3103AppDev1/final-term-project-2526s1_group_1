@@ -70,7 +70,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 
 // Router and auth
@@ -94,9 +94,26 @@ const toggleDropdown = () => {dropdownOpen.value = !dropdownOpen.value}
 const closeDropdown = () => {dropdownOpen.value = false}
 const toggleMobileMenu = () => {mobileMenuOpen.value = !mobileMenuOpen.value}
 const logout = async () => {
-    await signOut(auth)
-    dropdownOpen.value = false
-    router.push('/')
+    try {
+        // Update lastSeen timestamp before signing out
+        if (uid.value) {
+            const userDocRef = doc(db, "User Information", uid.value)
+            await updateDoc(userDocRef, {
+                lastSeen: serverTimestamp(),
+                online: false
+            })
+        }
+        
+        await signOut(auth)
+        dropdownOpen.value = false
+        router.push('/')
+    } catch (error) {
+        console.error('Error during logout:', error)
+        // Still sign out even if updating lastSeen fails
+        await signOut(auth)
+        dropdownOpen.value = false
+        router.push('/')
+    }
 }
 const loadUserProfile = async (userId) => {
     const userDocRef = doc(db, "User Information", userId)

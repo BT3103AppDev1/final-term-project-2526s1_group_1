@@ -111,16 +111,10 @@
                     <h3 class="font-bold text-slate-900">{{ selectedConversation.user.name }}</h3>
                     <p class="text-sm text-blue-600 font-medium">{{ selectedConversation.item }}</p>
                     <p v-if="selectedConversation.user.online" class="text-xs text-green-600 font-medium">Online now</p>
-                    <p v-else class="text-xs text-slate-500">Last seen recently</p>
+                    <p v-else class="text-xs text-slate-500">{{ getLastSeenText(selectedConversation.user.lastSeen) }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Button variant="outline" size="sm" class="hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors">
-                    <Phone class="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" class="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors">
-                    <Video class="h-4 w-4" />
-                  </Button>
                   <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors">
                     <Info class="h-4 w-4" />
                   </Button>
@@ -218,7 +212,7 @@ import { onMounted } from 'vue'
 import { useMessages } from '@/composables/useMessages'
 import { auth } from '@/firebase/config'
 import { ref, computed, nextTick } from 'vue'
-import { Send, Search, MoreVertical, Phone, Video, Info } from 'lucide-vue-next'
+import { Send, Search, MoreVertical, Info } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
 import Input from '@/components/ui/input.vue'
@@ -394,6 +388,29 @@ const getInitials = (name) => {
     .map(n => n[0])
     .join('')
     .toUpperCase()
+}
+
+const getLastSeenText = (lastSeen) => {
+  if (!lastSeen) return 'Last seen recently'
+  
+  const now = new Date()
+  const lastSeenDate = lastSeen.toDate ? lastSeen.toDate() : new Date(lastSeen)
+  const diffMs = now - lastSeenDate
+  const diffMinutes = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  
+  if (diffMinutes < 1) {
+    return 'Last seen just now'
+  } else if (diffMinutes < 60) {
+    return `Last seen ${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`
+  } else if (diffHours < 24) {
+    return `Last seen ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`
+  } else if (diffDays < 7) {
+    return `Last seen ${diffDays} day${diffDays > 1 ? 's' : ''} ago`
+  } else {
+    return `Last seen ${lastSeenDate.toLocaleDateString()}`
+  }
 }
 
 const selectConversation = (conversation) => {

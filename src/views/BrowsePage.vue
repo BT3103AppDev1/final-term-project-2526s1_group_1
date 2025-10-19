@@ -328,15 +328,15 @@ const fetchItems = async () => {
       const data = doc.data()
       fetchedItems.push({
         id: doc.id,
-        title: data.name || 'Untitled Item',
+        title: data.title || data.name || 'Untitled Item',
         description: data.description || 'No description available',
         price: data.price || 0,
-        period: data.pricePer || 'day',
+        period: data.period || data.pricePer || 'day',
         category: data.category ? data.category.toLowerCase() : 'other',
         location: data.location || 'Location not specified',
         rating: 4.5, // Default rating since we don't have reviews yet
         image: data.images && data.images.length > 0 ? data.images[0] : 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400',
-        available: data.status === 'Available' || !data.status,
+        available: data.status === 'active' || data.available !== false,
         owner: data.ownerName || 'Unknown',
         createdAt: data.createdAt
       })
