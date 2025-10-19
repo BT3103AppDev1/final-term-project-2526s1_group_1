@@ -1,0 +1,46 @@
+// Firestore Security Rules
+// Copy these rules to your Firebase Console > Firestore Database > Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write for authenticated users on all collections
+    // This is a more permissive approach for development
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+    
+    // Listings rules (for future implementation)
+    match /listings/{listingId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.ownerId;
+    }
+    
+    // Reviews rules (for future implementation)
+    match /reviews/{reviewId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}
+
+// Storage Security Rules
+// Copy these rules to your Firebase Console > Storage > Rules
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload avatars
+    match /avatars/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to upload listing images
+    match /listings/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
