@@ -16,43 +16,46 @@ export function useReviews() {
   const loading = ref(false)
   const error = ref(null)
 
-  // Create a new review
   const createReview = async (reviewData) => {
-    loading.value = true
-    error.value = null
+  loading.value = true
+  error.value = null
 
-    try {
-      if (!auth.currentUser) {
-        throw new Error('You must be logged in to leave a review')
-      }
-
-      const docRef = await addDoc(collection(db, 'reviews'), {
-        reviewerId: auth.currentUser.uid,
-        reviewerName: auth.currentUser.displayName || 'Anonymous',
-        reviewerEmail: auth.currentUser.email,
-        reviewerAvatar: auth.currentUser.photoURL || '/placeholder-user.jpg',
-        ownerId: reviewData.ownerId,
-        ownerName: reviewData.ownerName,
-        listingId: reviewData.listingId,
-        listingTitle: reviewData.listingTitle,
-        rentalId: reviewData.rentalId, // Reference to the completed rental
-        rating: reviewData.rating,
-        comment: reviewData.comment,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      })
-
-      console.log('Review created with ID:', docRef.id)
-      return docRef.id
-    } catch (err) {
-      console.error('Error creating review:', err)
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
+  try {
+    if (!auth.currentUser) {
+      throw new Error('You must be logged in to leave a review')
     }
-  }
 
+    const docRef = await addDoc(collection(db, 'reviews'), {
+      reviewerId: auth.currentUser.uid,
+      reviewerName: auth.currentUser.displayName || 'Anonymous',
+      reviewerEmail: auth.currentUser.email,
+      reviewerAvatar: auth.currentUser.photoURL || '/placeholder-user.jpg',
+      ownerId: reviewData.ownerId,
+      ownerName: reviewData.ownerName,
+      listingId: reviewData.listingId,
+      listingTitle: reviewData.listingTitle,
+      rentalId: reviewData.rentalId,
+      rating: reviewData.rating,
+      comment: reviewData.comment,
+      // Include both percentage and star ratings
+      responseRate: Math.min(Number(reviewData.responseRate), 100),
+      onTimeDelivery: Math.min(Number(reviewData.onTimeDelivery), 100),
+      responseRating: reviewData.responseRating, // 1-5 stars
+      conditionRating: reviewData.conditionRating, // 1-5 stars
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
+
+    console.log('Review created with ID:', docRef.id)
+    return docRef.id
+  } catch (err) {
+    console.error('Error creating review:', err)
+    error.value = err.message
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
   // Get reviews for a specific user (as owner)
   const getUserReviews = async (userId = null) => {
     loading.value = true
@@ -97,7 +100,9 @@ export function useReviews() {
             }) : 'Recently',
           createdAt: data.createdAt,
           listingId: data.listingId,
-          rentalId: data.rentalId
+          rentalId: data.rentalId,
+          responseRate: data.responseRate || 98,
+          onTimeDelivery: data.onTimeDelivery || 100
         })
       })
 

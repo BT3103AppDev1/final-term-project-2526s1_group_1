@@ -3,7 +3,7 @@
     <h1 class="text-2xl font-semibold mb-6 text-center">My Rentals</h1>
     <div v-if="loading" class="text-center text-gray-500">Loading your rentals...</div>
     <div v-else>
-      <!--Borrowed Items-->
+      <!--Borrowed-->
       <section class="mb-10 text-center bg-slate-300 rounded-3xl p-4">
         <h2 class="text-xl font-bold mb-3 text-blue-700">Borrowed Items</h2>
         <div v-if="borrowedItems.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -25,24 +25,16 @@
                 {{rental.status}}
               </span>
             </p>
-
-            <div v-if="rental.status === 'Completed' && !rental.borrowerRating">
-              <h4 class="text-sm font-semibold mb-1">Feedback on Item/Renter!</h4>
-              <textarea v-model="rental.tempReview" placeholder="Your Review" class="w-full border rounded-md p-2 mb-2 text-sm"rows="2"></textarea>
-              <button class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm"@click="submitRating(rental)">
-                Submit
-              </button>
+            <div v-if="rental.status==='Completed'" class="mt-3">
+              <button v-if="!rental.hasReview" @click="openReviewModal(rental)" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm w-full">
+                Leave Review</button>
             </div>
-            <router-link
-              :to="`/item/${rental.itemId}`"
-              class="text-blue-500 hover:underline text-sm"
-              >View Item</router-link
-            >
+            <router-link :to="`/item/${rental.itemId}`" class="text-blue-500 hover:underline text-sm mt-2 inline-block">View Item</router-link>
           </div>
         </div>
         <p v-else class="text-gray-500">You haven't borrowed anything yet.</p>
       </section>
-      <!--Rental Requests-->
+      <!--Rental req-->
       <section class="mb-10 text-center bg-[#dbcabd] rounded-3xl p-4">
         <h2 class="text-xl font-bold mb-3 text-orange-700">Rental Requests</h2>
         <div v-if="rentalRequests.length" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -55,14 +47,11 @@
               Total: ${{ request.totalCost }}
             </p>
             <p class="text-gray-700 text-sm mb-3">{{ request.message }}</p>
-            
             <div class="flex gap-2">
               <button @click="acceptRequest(request.id)" class="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 text-sm">
-                Accept
-              </button>
+                Accept</button>
               <button @click="rejectRequest(request.id)" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm">
-                Reject
-              </button>
+                Reject</button>
             </div>
           </div>
         </div>
@@ -102,27 +91,70 @@
                 v-if="listing.status === 'Rented'" 
                 @click="markAsReturned(listing.id, listing.currentRentalId)"
                 class="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
-              >
-                Mark as Returned
-              </button>
+              >Mark as Returned</button>
             </div>
           </div>
         </div>
         <p v-else class="text-gray-500">You haven't lent out any items yet.</p>
       </section>
     </div>
-  </div>
+  <ReviewForm v-if="reviewingRental"
+    :is-open="showReviewModal"
+    :rental-id="reviewingRental.id"
+    :owner-id="reviewingRental.lenderId"
+    :owner-name="reviewingRental.lenderName"
+    :listing-id="reviewingRental.itemId"
+    :listing-title="reviewingRental.title"
+    @close="closeReviewModal"
+    @success="handleReviewSuccess"/>
+    </div>
 </template>
 
 <script setup>
 import {ref, onMounted} from 'vue'
 import {auth, db} from '@/firebase/config'
 import {collection,query,where,getDocs,doc,updateDoc,serverTimestamp} from 'firebase/firestore'
-
+import ReviewForm from '@/views/ReviewForm.vue'
+const showReviewModal = ref(false)
+const reviewingRental = ref(null)
 const borrowedItems = ref([])
 const lentItems = ref([])
 const loading = ref(true)
 const rentalRequests = ref([])
+
+const openReviewModal = (rental) => {
+  reviewingRental.value = rental
+  showReviewModal.value = true
+}
+const closeReviewModal = () => {
+  showReviewModal.value = false
+  reviewingRental.value = null
+}
+const handleReviewSuccess = async () => {
+  console.log('Review submitted successfully')
+  closeReviewModal()
+  await fetchRentals()//refresh and iupdaste
+  window.dispatchEvent(new CustomEvent('review-submitted', {
+    detail: {
+      timestamp: new Date().toISOString(),
+      lenderId: reviewingRental.value?.lenderId
+    }
+  }))
+  alert('Review submitted!')
+}
+const checkRentalHasReview = async (rentalId) => {
+  try {
+    const reviewsQuery = query(
+      collection(db, 'reviews'),
+      where('rentalId', '==', rentalId)
+    )
+    const reviewsSnap = await getDocs(reviewsQuery)
+    return !reviewsSnap.empty
+  } catch (error) {
+    console.error('Error checking reviews:', error)
+    return false
+  }
+}
 
 const fetchRentals = async () => {
   const user = auth.currentUser
@@ -130,159 +162,106 @@ const fetchRentals = async () => {
     loading.value = false
     return
   }
-  const borrowedQuery = query(//fetch borrowed items
-    collection(db, 'rentals'), 
-    where('borrowerId', '==', user.uid)
-  )
-  const borrowedSnap = await getDocs(borrowedQuery)
-  borrowedItems.value = borrowedSnap.docs.map(doc => ({ id: doc.id,...doc.data()
-  }))
-  const requestsQuery = query(//fetch rent req from others
-    collection(db, 'rentals'), 
-    where('lenderId', '==', user.uid),
-    where('status', '==', 'Pending')
-  )
-  const requestsSnap = await getDocs(requestsQuery)
-  rentalRequests.value = requestsSnap.docs.map(doc => ({id: doc.id,...doc.data()
-  }))
-  const lentQuery = query(//fetch listed items
-    collection(db, 'listings'), 
-    where('ownerId', '==', user.uid)
-  )
-  const lentSnap = await getDocs(lentQuery)
-  lentItems.value = lentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() 
-  }))
-  loading.value = false
+    const borrowedQuery = query(//borrowed items
+      collection(db, 'rentals'), 
+      where('borrowerId', '==', user.uid)
+    )
+    const borrowedSnap = await getDocs(borrowedQuery)
+    const borrowedItemsWithReviewStatus = await Promise.all(//check each for alr reviews
+      borrowedSnap.docs.map(async (doc) => {
+        const rentalData = { id: doc.id, ...doc.data() }
+        const hasReview = await checkRentalHasReview(doc.id)
+        return { ...rentalData, hasReview }
+      })
+    )
+    
+    borrowedItems.value = borrowedItemsWithReviewStatus
+    const requestsQuery = query(//rental query
+      collection(db, 'rentals'), 
+      where('lenderId', '==', user.uid),
+      where('status', '==', 'Pending')
+    )
+    const requestsSnap = await getDocs(requestsQuery)
+    rentalRequests.value = requestsSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+    const lentQuery = query(//listed
+      collection(db, 'listings'), 
+      where('ownerId', '==', user.uid)
+    )
+    const lentSnap = await getDocs(lentQuery)
+    lentItems.value = lentSnap.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    }))
+    loading.value = false
 }
-const acceptRequest = async (requestId)=> {
-    try {
-      // Find the request to get the itemId
-      const request = rentalRequests.value.find(req => req.id === requestId)
-      if (!request) {
-        alert('Rental request not found!')
-        return
-      }
 
-      console.log('Accepting request:', request)
-      console.log('Item ID:', request.itemId)
-
-      // Update rental status
-      await updateDoc(doc(db, 'rentals', requestId), { 
-        status:'Approved',
-        approvedAt: serverTimestamp()
-      })
-
-      console.log('Rental status updated to Approved')
-
-      // Update item status to 'Rented' in listings collection
-      await updateDoc(doc(db, 'listings', request.itemId), {
-        status: 'Rented',
-        rentedAt: serverTimestamp(),
-        currentRenterId: request.borrowerId,
-        currentRentalId: requestId
-      })
-
-      console.log('Item status updated to Rented')
-
-      // Remove from rental requests
-      rentalRequests.value = rentalRequests.value.filter(req => req.id !== requestId)
-      
-      // Update the local lentItems to reflect the new status
-      const lentItem = lentItems.value.find(item => item.id === request.itemId)
-      if (lentItem) {
-        lentItem.status = 'Rented'
-        console.log('Local item status updated')
-      }
-
-      alert('Rental request accepted! Item is now marked as rented.')
-    } catch (error) {
-      console.error('Error accepting rental request:', error)
-      alert('Error accepting rental request. Please try again.')
+const acceptRequest = async (requestId) => {
+  try {
+    const request = rentalRequests.value.find(req => req.id === requestId)
+    if (!request) {
+      alert('Rental request not found!')
+      return
     }
+
+    await updateDoc(doc(db, 'rentals', requestId), { 
+      status:'Approved',
+      approvedAt: serverTimestamp()
+    })
+
+    await updateDoc(doc(db, 'listings', request.itemId), {
+      status: 'Rented',
+      rentedAt: serverTimestamp(),
+      currentRenterId: request.borrowerId,
+      currentRentalId: requestId
+    })
+
+    rentalRequests.value = rentalRequests.value.filter(req => req.id !== requestId)
+    
+    const lentItem = lentItems.value.find(item => item.id === request.itemId)
+    if (lentItem) {
+      lentItem.status = 'Rented'
+    }
+
+    alert('Rental request accepted! Item is now marked as rented.')
+  } catch (error) {
+    console.error('Error accepting rental request:', error)
+    alert('Error accepting rental request. Please try again.')
+  }
 }
+
 const rejectRequest = async (requestId) => {
-    try {
-      // Find the request to get the itemId
-      const request = rentalRequests.value.find(req => req.id === requestId)
-      if (!request) {
-        alert('Rental request not found!')
-        return
-      }
-
-      // Update rental status
-      await updateDoc(doc(db, 'rentals', requestId), { 
-        status:'Rejected',
-        rejectedAt:serverTimestamp()
-      })
-
-      // Ensure item remains available (in case there were multiple requests)
-      await updateDoc(doc(db, 'listings', request.itemId), {
-        status: 'Available',
-        lastRejectedAt: serverTimestamp()
-      })
-
-      // Remove from rental requests
-      rentalRequests.value = rentalRequests.value.filter(req => req.id !== requestId)
-      
-      // Update the local lentItems to reflect the status
-      const lentItem = lentItems.value.find(item => item.id === request.itemId)
-      if (lentItem) {
-        lentItem.status = 'Available'
-      }
-
-      alert('Rental request rejected. Item remains available.')
-    } catch (error) {
-      console.error('Error rejecting rental request:', error)
-      alert('Error rejecting rental request. Please try again.')
+    const request = rentalRequests.value.find(req=>req.id === requestId)
+    if (!request) {
+      alert('Rental request not found!')
+      return
     }
-}
-const submitRating = async (rental) => {
-    try {
-      await updateDoc(doc(db, 'rentals', rental.id), {
-        borrowerRating: rental.tempRating,
-        borrowerReview: rental.tempReview,
-        reviewTimestamp: serverTimestamp(),
-        status: 'Completed'
-      })
-
-      // Mark item as available again when rental is completed
-      await updateDoc(doc(db, 'listings', rental.itemId), {
-        status: 'Available',
-        completedAt: serverTimestamp(),
-        currentRenterId: null,
-        currentRentalId: null
-      })
-
-      rental.borrowerRating = rental.tempRating
-      rental.borrowerReview = rental.tempReview
-      rental.status = 'Completed'
-      
-      alert('Thank you for your feedback! The item is now available for rent again.')
-    } catch (error) {
-      console.error('Error submitting rating:', error)
-      alert('Error submitting feedback. Please try again.')
+    await updateDoc(doc(db,'rentals',requestId), { 
+      status:'Rejected',rejectedAt:serverTimestamp()
+    })
+    await updateDoc(doc(db,'listings',request.itemId), {
+      status: 'Available',lastRejectedAt: serverTimestamp()
+    })
+    rentalRequests.value = rentalRequests.value.filter(req => req.id !== requestId)
+    const lentItem = lentItems.value.find(item => item.id === request.itemId)
+    if (lentItem) {
+      lentItem.status = 'Available'
     }
+    alert('Rental request rejected. Item available.')
 }
-const editListing = (listingId) => {
-  console.log('Editing listing:', listingId)
-  alert('Edit functionality coming soon!')
-}
-
 const markAsReturned = async (itemId, rentalId) => {
   if (!rentalId) {
     alert('No active rental found for this item.')
     return
   }
-
-  try {
-    // Update rental status to completed
     await updateDoc(doc(db, 'rentals', rentalId), {
       status: 'Completed',
       returnedAt: serverTimestamp(),
       lenderMarkedReturned: true
     })
 
-    // Mark item as available again
     await updateDoc(doc(db, 'listings', itemId), {
       status: 'Available',
       completedAt: serverTimestamp(),
@@ -290,19 +269,13 @@ const markAsReturned = async (itemId, rentalId) => {
       currentRentalId: null
     })
 
-    // Update the local state
     const lentItem = lentItems.value.find(item => item.id === itemId)
     if (lentItem) {
       lentItem.status = 'Available'
       lentItem.currentRenterId = null
       lentItem.currentRentalId = null
     }
-
-    alert('Item marked as returned and is now available for rent again!')
-  } catch (error) {
-    console.error('Error marking item as returned:', error)
-    alert('Error updating item status. Please try again.')
-  }
+    alert('Item returned and available for rent!')
 }
 onMounted(fetchRentals)
 </script>
