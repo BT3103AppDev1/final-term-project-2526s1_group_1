@@ -260,12 +260,14 @@ onMounted(async () => {
 // Computed
 const filteredConversations = computed(() => {
   if (!searchQuery.value) return conversations.value
-  
+
   const query = searchQuery.value.toLowerCase()
-  return conversations.value.filter(conv => 
-    (conv.itemTitle || '').toLowerCase().includes(query)
+  return conversations.value.filter(conv =>
+    (conv.itemTitle || '').toLowerCase().includes(query) ||
+    (conv.user?.name || '').toLowerCase().includes(query)
   )
 })
+
 
 
 // Methods
