@@ -165,7 +165,7 @@
                   </div>
                   <div class="flex items-center gap-1 text-sm text-slate-600">
                     <Star class="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{{ item.owner.rating }} ({{ item.owner.reviewCount }} reviews)</span>
+                    <span>{{ ownerRating }} ({{ ownerReviewCount }} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -219,6 +219,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
 import { db, auth } from '@/firebase.js'
 import { useMessages } from '@/composables/useMessages.js'
+import { useReviews } from '@/composables/useReviews'
 import {
   MapPin,
   Star,
@@ -363,15 +364,26 @@ const fetchItemData = async (itemId) => {
 }
 
 // Load item data based on route parameter
-onMounted(() => {
+const { getUserAverageRating } = useReviews()
+const ownerRating = ref(0)
+const ownerReviewCount = ref(0)
+
+onMounted(async () => {
   const itemId = route.params.id
   console.log('ItemDetailPage mounted with ID:', itemId)
   
   if (itemId) {
-    fetchItemData(itemId)
+    await fetchItemData(itemId)
+
+    if (item.value?.owner?.id) {
+      const { average, total } = await getUserAverageRating(item.value.owner.id)
+      ownerRating.value = average
+      ownerReviewCount.value = total
+    }
   } else {
     error.value = 'No item ID provided'
     loading.value = false
   }
 })
+
 </script>
