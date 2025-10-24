@@ -335,7 +335,7 @@ const fetchItemData = async (itemId) => {
           id: itemData.ownerId,
           name: itemData.ownerName || 'Anonymous User',
           avatar: itemData.ownerAvatar || '/placeholder-user.jpg',
-          rating: itemData.ownerRating || 4.5,
+          rating: itemData.ownerRating || 'no ratings record',
           reviewCount: itemData.ownerReviewCount || 0,
           verified: itemData.ownerVerified || false
         }
