@@ -303,15 +303,13 @@ const toggleMenu = () => {
 }
 
 const goToProfile = () => {
-  // ✅ 1️⃣ 먼저 conversation 안쪽에서 userId 직접 찾기
   const userId =
     selectedConversation.value?.user?.id ||
-    selectedConversation.value?.otherUserId ||   // 대화 상대방 id
+    selectedConversation.value?.otherUserId ||  
     (selectedConversation.value?.participants?.find?.(
       id => id !== currentUserId.value
-    ))                                           // participants 배열에서 내 uid 제외한 상대 uid
+    ))                                 
 
-  // ✅ 2️⃣ 안전하게 확인 후 이동
   if (userId) {
     router.push(`/profile/${userId}`)
   } else {
