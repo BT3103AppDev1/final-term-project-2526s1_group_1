@@ -55,7 +55,9 @@
                     { value: 'Equipment', label: '🔧 Equipment' },
                     { value: 'Supplies', label: '📝 Supplies' },
                     { value: 'Furniture', label: '🪑 Furniture' },
-                    { value: 'Clothing', label: '👕 Clothing' }
+                    { value: 'Clothing', label: '👕 Clothing' },
+                    { value: 'Sports', label: '🏀 Sports' },
+                     { value: 'Others', label: '📦 Others' }
                   ]"
                   placeholder="Select category"
                 />
