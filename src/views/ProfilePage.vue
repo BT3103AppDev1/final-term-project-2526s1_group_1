@@ -80,9 +80,8 @@
                   <!-- Rating -->
                   <div class="flex items-center justify-center gap-2">
                     <div class="flex items-center gap-1">
-                      <Star v-for="i in 5" :key="i" 
-                           :class="i <= Math.floor(user.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'"
-                           class="h-4 w-4" />
+                      <Star v-for="i in 5" :key="i" :class="i <= Math.floor(user.rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'"
+                          class="h-4 w-4" />
                     </div>
                     <span class="font-semibold text-slate-900">{{ user.rating || 0 }}</span>
                     <span class="text-slate-500">({{ user.reviewCount || 0 }})</span>
@@ -504,40 +503,40 @@
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
                           <span class="text-slate-600 font-medium">Response Rate</span>
-                          <span class="font-bold text-green-600">98%</span>
+                          <span class="font-bold text-green-600">{{responseRatePercentage}}%</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
-                          <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" style="width: 98%"></div>
+                          <div class="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" :style="`width: ${responseRatePercentage}%`"></div>
                         </div>
                       </div>
                       
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
                           <span class="text-slate-600 font-medium">On-time Delivery</span>
-                          <span class="font-bold text-blue-600">100%</span>
+                          <span class="font-bold text-blue-600">{{completionRatePercentage}}%</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
-                          <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: 100%"></div>
+                          <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" :style="`width: ${completionRatePercentage}%`"></div>
                         </div>
                       </div>
                       
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
                           <span class="text-slate-600 font-medium">Customer Satisfaction</span>
-                          <span class="font-bold text-purple-600">4.9/5.0</span>
+                          <span class="font-bold text-purple-600">{{customerSatisfaction}}%/5.0</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
-                          <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" style="width: 98%"></div>
+                          <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" :style="`width: ${(customerSatisfaction/5)*100}%`"></div>
                         </div>
                       </div>
                       
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
                           <span class="text-slate-600 font-medium">Repeat Customers</span>
-                          <span class="font-bold text-amber-600">35%</span>
+                          <span class="font-bold text-amber-600">{{repeatCustomerRate}}%</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
-                          <div class="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full" style="width: 35%"></div>
+                          <div class="bg-gradient-to-r from-amber-500 to-orange-500 h-2 rounded-full" :style="`width: ${repeatCustomerRate}%`"></div>
                         </div>
                       </div>
                     </div>
@@ -617,6 +616,7 @@ import ReviewCard from '@/components/ReviewCard.vue'
 import { useUserProfile } from '@/composables/useUserProfile'
 import { useListings } from '@/composables/useListings'
 import { useReviews } from '@/composables/useReviews'
+import { useUserStats } from '@/composables/useUserStats'//HIIIII
 
 const route = useRoute()
 const router = useRouter()
@@ -833,6 +833,38 @@ const unwatch = watch(() => route.fullPath, async (newPath) => {
     }
   }
 })
+const { calcStats, loading: statsLoading } = useUserStats()//HIIIIIIIIII
+const userStats = ref(null)
+const loadUserStats = async (userId = null) => {
+  try {
+    const targetUserId = userId || currentUser.value?.uid
+    if (!targetUserId) return
+    
+    console.log('Calculating stats for user:', targetUserId)
+    const stats = await calcStats(targetUserId)
+    userStats.value = stats
+    
+    // Update user object with calculated stats
+    if (user.value) {
+      user.value.stats = {
+        itemsListed: stats.itemsListed,
+        itemsRented: stats.itemsRented,
+        totalEarnings: stats.totalEarnings,
+        successfulTransactions: stats.successfulTransactions
+      }
+      user.value.rating = stats.averageRating
+      user.value.reviewCount = stats.totalReviews
+    }
+    
+    console.log('Calculated stats:', stats)
+  } catch (err) {
+    console.error('Error loading user stats:', err)
+  }
+}
+const responseRatePercentage = computed(() => userStats.value?.responseRate || 98)//HIIIIIIIIIII
+const completionRatePercentage = computed(() => userStats.value?.completionRate || 100)
+const customerSatisfaction = computed(() => user.value?.rating || 0)
+const repeatCustomerRate = computed(() => userStats.value?.repeatCustomerRate || 0)//HIIIIIIIIIIII
 
 onBeforeUnmount(() => {
   unwatch()
@@ -891,7 +923,11 @@ onMounted(async () => {
     if (!user.value) {
       user.value = mockUserProfile
     }
-    
+    if (profileUserId.value) {
+      await loadUserStats(profileUserId.value)
+    } else {
+      await loadUserStats()
+    }//HIIIIIIIII
     console.log('Final user value:', user.value)
     console.log('Active tab:', activeTab.value)
     console.log('User items:', userItems.value.length)
