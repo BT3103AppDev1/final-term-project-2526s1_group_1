@@ -109,7 +109,7 @@
         <!-- Sidebar -->
         <div class="space-y-6">
           <!-- Rental Card -->
-          <Card class="border-0 shadow-xl bg-white/80 backdrop-blur-sm sticky top-24">
+          <Card class="border-0 shadow-xl bg-white/80 backdrop-blur-sm top-24">
             <CardHeader class="text-center">
               <div class="text-4xl font-bold text-blue-600 mb-2">
                 ${{ item.price }}
