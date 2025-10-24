@@ -115,7 +115,8 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors">
+                  <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
+                  @click="showInfo = true">
                     <Info class="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="sm" class="hover:bg-slate-50 hover:border-slate-300 transition-colors">
@@ -211,6 +212,38 @@
       </div>
     </div>
   </div>
+<!-- Info Modal -->
+<template v-if="showInfo">
+  <div 
+    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    @click.self="showInfo = false"
+  >
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-sm text-center">
+      <h2 class="text-xl font-semibold text-slate-900 mb-2">User Info</h2>
+      <p class="text-slate-700">
+        ⭐ Rating:
+        <span class="font-semibold">
+          {{ selectedConversation?.user?.rating?.toFixed?.(1) || '4.5' }}
+        </span>
+      </p>
+
+      <p class="text-slate-700 mb-6">
+        📝 Reviews:
+        <span class="font-semibold">
+          {{ selectedConversation?.user?.reviewCount || 0 }}
+        </span>
+      </p>
+      <Button 
+        variant="outline" 
+        class="w-full"
+        @click="showInfo = false"
+      >
+        Close
+      </Button>
+    </div>
+  </div>
+</template>
+
 </template>
 
 <script setup>
@@ -224,7 +257,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.v
 import Input from '@/components/ui/input.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 
+
 // State
+const showInfo = ref(false)
 const selectedConversation = ref(null)
 const newMessage = ref('')
 const searchQuery = ref('')
@@ -337,7 +372,9 @@ const handleSendMessage = async () => {
   })
 }
 
+
 </script>
+
 
 <style scoped>
 /* Custom scrollbar for messages */
