@@ -306,6 +306,16 @@ const fetchItemData = async (itemId) => {
     if (itemSnap.exists()) {
       const itemData = itemSnap.data()
       console.log('Item data from Firebase:', itemData)
+
+      let ownerAvatar = itemData.ownerAvatar || '/placeholder-user.jpg'
+      if (itemData.ownerId) {
+        const ownerRef = doc(db, 'User Information', itemData.ownerId)
+        const ownerSnap = await getDoc(ownerRef)
+        if (ownerSnap.exists()) {
+          ownerAvatar = ownerSnap.data().profileImageUrl || ownerAvatar
+        }
+      }
+
       
       // Transform Firebase data to match component expectations
       item.value = {
@@ -334,7 +344,7 @@ const fetchItemData = async (itemId) => {
         owner: {
           id: itemData.ownerId,
           name: itemData.ownerName || 'Anonymous User',
-          avatar: itemData.ownerAvatar || '/placeholder-user.jpg',
+          avatar: ownerAvatar,
           rating: itemData.ownerRating || 'no ratings record',
           reviewCount: itemData.ownerReviewCount || 0,
           verified: itemData.ownerVerified || false
