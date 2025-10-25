@@ -277,9 +277,10 @@ const sendMessage = async () => {
     // Create or find existing conversation
     const conversationId = await createConversation(
       item.value.owner.id,
-      item.value.id,
-      item.value.title
+      JSON.parse(JSON.stringify(item.value))
     )
+
+
 
     // Show success message
     alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)

@@ -151,6 +151,13 @@
                         ]"
                       >
                         <p class="text-sm leading-relaxed">{{ message.text }}</p>
+                        <img
+                          v-if="message.itemImage || message.imageUrl"
+                          :src="message.itemImage || message.imageUrl"
+                          alt="Item image"
+                          class="mt-2 rounded-lg max-h-40 object-cover border border-slate-200"
+                        />
+
                       </div>
                       <p
                         :class="[
@@ -299,11 +306,12 @@ const getLastSeenText = (lastSeen) => {
 
 const selectConversation = (conversation) => {
   selectedConversation.value = conversation
-  messages.value = [] // 초기화
+  messages.value = [] 
   subscribeToMessages(conversation.id, (msgs) => {
     messages.value = msgs.map(m => ({
       id: m.id,
       text: m.text,
+      itemImage: m.itemImage || m.imageUrl || '',
       timestamp: m.createdAt?.toDate?.()?.toLocaleString() || '',
       isMe: m.senderId === currentUserId.value
     }))

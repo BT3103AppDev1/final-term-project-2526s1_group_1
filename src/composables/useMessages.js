@@ -128,49 +128,70 @@ export function useMessages() {
     }
   }
 
+
   /**
    * Create a new conversation (if it doesn’t already exist)
    * between the current user and another participant.
    */
-  const createConversation = async (participantId, itemId, itemTitle) => {
-    loading.value = true
-    error.value = null
+  const createConversation = async (participantId, item) => {
+  loading.value = true
+  error.value = null
 
-    try {
-      const currentUser = auth.currentUser
-      if (!currentUser) throw new Error('User not logged in')
+  try {
+    const currentUser = auth.currentUser
+    if (!currentUser) throw new Error('User not logged in')
 
-      // Check for existing conversation between these two users for the same item
-      const existingQ = query(
-        collection(db, 'conversations'),
-        where('participants', 'array-contains', currentUser.uid)
-      )
-      const snapshot = await getDocs(existingQ)
-      const existing = snapshot.docs.find(
-        d => d.data().participants.includes(participantId) && d.data().itemId === itemId
-      )
+    const existingQ = query(
+      collection(db, 'conversations'),
+      where('participants', 'array-contains', currentUser.uid)
+    )
+    const snapshot = await getDocs(existingQ)
+    const existing = snapshot.docs.find(
+      d => d.data().participants.includes(participantId)
+    )
 
-      if (existing) return existing.id
-
-      // Otherwise, create a new conversation
+    let conversationRef
+    if (existing) {
+      conversationRef = doc(db, 'conversations', existing.id)
+    } else {
       const docRef = await addDoc(collection(db, 'conversations'), {
         participants: [currentUser.uid, participantId],
-        itemId,
-        itemTitle,
+        itemId: item.id,
+        itemTitle: item.title,
+        createdAt: serverTimestamp(),
         lastMessage: '',
-        lastMessageAt: serverTimestamp(),
-        createdAt: serverTimestamp()
+        lastMessageAt: serverTimestamp()
       })
-
-      return docRef.id
-    } catch (err) {
-      console.error('createConversation Error:', err)
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
+      conversationRef = docRef
     }
+
+    const imageUrl =
+      Array.isArray(item.images) && item.images.length > 0
+        ? item.images[0]
+        : '/placeholder.jpg'
+
+    await addDoc(collection(db, `conversations/${conversationRef.id}/messages`), {
+      senderId: currentUser.uid,
+      senderName: currentUser.displayName || 'Anonymous',
+      text: `Hi! I'm interested in your item: ${item.title}`,
+      itemImage: imageUrl,
+      createdAt: serverTimestamp()
+    })
+
+    await updateDoc(conversationRef, {
+      lastMessage: `Hi! I'm interested in your item: ${item.title}`,
+      lastMessageAt: serverTimestamp()
+    })
+
+    return conversationRef.id
+  } catch (err) {
+    console.error('createConversation Error:', err)
+    error.value = err.message
+    throw err
+  } finally {
+    loading.value = false
   }
+}
 
   return {
     loading,
