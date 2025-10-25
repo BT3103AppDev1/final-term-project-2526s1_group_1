@@ -1,17 +1,6 @@
 import { ref } from 'vue'
 import { db, auth } from '@/firebase/config'
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
+import {collection,addDoc,doc,getDoc,getDocs,updateDoc,query,where,orderBy,onSnapshot,serverTimestamp
 } from 'firebase/firestore'
 
 export function useMessages() {
@@ -19,28 +8,20 @@ export function useMessages() {
   const error = ref(null)
   const conversations = ref([])
   const messages = ref([])
-
-  /**
-   * Fetch all conversations for the current user,
-   * and merge participant profile data from "User Information" collection.
-   */
+  /* Fetch convo for current user, and merge participant profile data from "User Information" collection.*/
   const getConversations = async () => {
     loading.value = true
     error.value = null
-
     try {
       const currentUserId = auth.currentUser?.uid
       if (!currentUserId) throw new Error('User not logged in')
-
-      // Query conversations that include the current user
+      // Query convos that include current user
       const q = query(
         collection(db, 'conversations'),
         where('participants', 'array-contains', currentUserId),
         orderBy('lastMessageAt', 'desc')
       )
-
       const snapshot = await getDocs(q)
-
       // Merge participant info (excluding current user)
       const convos = await Promise.all(
         snapshot.docs.map(async (docSnap) => {
@@ -56,13 +37,12 @@ export function useMessages() {
               const userInfo = userSnap.data()
               userData = {
                 name: userInfo.name || 'Unknown User',
-                avatar: userInfo.avatar || '/placeholder.svg',
+                avatar: userInfo.profileImageUrl || '/placeholder.svg',
                 online: userInfo.online || false,
                 lastSeen: userInfo.lastSeen || null
               }
             }
           }
-
           return {
             id: docSnap.id,
             ...data,
@@ -70,7 +50,6 @@ export function useMessages() {
           }
         })
       )
-
       conversations.value = convos
       return convos
     } catch (err) {
@@ -81,11 +60,6 @@ export function useMessages() {
       loading.value = false
     }
   }
-
-  /**
-   * Subscribe to real-time updates for a given conversation.
-   * Automatically updates message list and triggers optional callback.
-   */
   const subscribeToMessages = (conversationId, callback) => {
     const q = query(
       collection(db, 'conversations', conversationId, 'messages'),
@@ -101,10 +75,7 @@ export function useMessages() {
       if (callback) callback(msgs)
     })
   }
-
-  /**
-   * Send a new message to a conversation and update its lastMessage field.
-   */
+  /*Send a new msg to a conv and update its lastMessage field.*/
   const sendMessage = async (conversationId, text) => {
     loading.value = true
     error.value = null
@@ -112,8 +83,7 @@ export function useMessages() {
     try {
       const currentUser = auth.currentUser
       if (!currentUser) throw new Error('User not logged in')
-
-      // Add the message
+      // Add msg
       await addDoc(
         collection(db, 'conversations', conversationId, 'messages'),
         {
@@ -137,51 +107,75 @@ export function useMessages() {
       loading.value = false
     }
   }
+  /**Create a new conv between current user and another*/
+const createConversation = async (participantId, item) => {
+  loading.value = true
+  error.value = null
 
-  /**
-   * Create a new conversation (if it doesn’t already exist)
-   * between the current user and another participant.
-   */
-  const createConversation = async (participantId, itemId, itemTitle) => {
-    loading.value = true
-    error.value = null
+  try {
+    const currentUser = auth.currentUser
+    if (!currentUser) throw new Error('User not logged in')
 
-    try {
-      const currentUser = auth.currentUser
-      if (!currentUser) throw new Error('User not logged in')
+    const existingQ = query(
+      collection(db, 'conversations'),
+      where('participants', 'array-contains', currentUser.uid)
+    )
+    const snapshot = await getDocs(existingQ)
+    const existing = snapshot.docs.find(
+      d => d.data().participants.includes(participantId)
+    )
 
-      // Check for existing conversation between these two users for the same item
-      const existingQ = query(
-        collection(db, 'conversations'),
-        where('participants', 'array-contains', currentUser.uid)
-      )
-      const snapshot = await getDocs(existingQ)
-      const existing = snapshot.docs.find(
-        d => d.data().participants.includes(participantId) && d.data().itemId === itemId
-      )
+    let conversationRef
 
-      if (existing) return existing.id
-
-      // Otherwise, create a new conversation
+    if (existing) {
+      conversationRef = doc(db, 'conversations', existing.id)
+    } else {
       const docRef = await addDoc(collection(db, 'conversations'), {
         participants: [currentUser.uid, participantId],
-        itemId,
-        itemTitle,
+        itemId: item.id,
+        itemTitle: item.title,
+        createdAt: serverTimestamp(),
         lastMessage: '',
-        lastMessageAt: serverTimestamp(),
-        createdAt: serverTimestamp()
+        lastMessageAt: serverTimestamp()
       })
-
-      return docRef.id
-    } catch (err) {
-      console.error('createConversation Error:', err)
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
+      conversationRef = docRef
     }
-  }
 
+    console.log('🔥 plain item:', item)
+    console.log('🔥 Sending image URL:',
+      (Array.isArray(item.images) && item.images.length > 0 && item.images[0]) ||
+      item.image ||
+      '/placeholder.jpg'
+    )
+
+    //conversationRef
+    await addDoc(
+      collection(db, `conversations/${conversationRef.id}/messages`),
+      {
+        senderId: currentUser.uid,
+        senderName: currentUser.displayName || 'Anonymous',
+        text: `Hi! I'm interested in your item: ${item.description || item.title || 'this item'}`,
+        itemImage:
+          (Array.isArray(item.images) && item.images.length > 0 && item.images[0]) ||
+          item.image ||
+          '/placeholder.jpg',
+        createdAt: serverTimestamp()
+      }
+    )
+
+    await updateDoc(conversationRef, {
+      lastMessage: `Hi! I'm interested in your item: ${item.description || item.title || 'this item'}`,
+      lastMessageAt: serverTimestamp()
+    })
+    return conversationRef.id
+  } catch (err) {
+    console.error('createConversation Error:', err)
+    error.value = err.message
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
   return {
     loading,
     error,
