@@ -46,11 +46,12 @@ export function useMessages() {
               const userInfo = userSnap.data()
               userData = {
                 name: userInfo.name || 'Unknown User',
-                avatar: userInfo.avatar || '/placeholder.svg',
+                avatar: userInfo.profileImageUrl || '/placeholder.svg', 
                 online: userInfo.online || false,
                 lastSeen: userInfo.lastSeen || null
               }
             }
+
           }
 
           return {
