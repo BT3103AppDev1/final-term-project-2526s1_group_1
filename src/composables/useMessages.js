@@ -2,9 +2,11 @@ import { ref } from 'vue'
 import { db, auth } from '@/firebase/config'
 import {collection,addDoc,doc,getDoc,getDocs,updateDoc,query,where,orderBy,onSnapshot,serverTimestamp
 } from 'firebase/firestore'
+import { useReviews } from '@/composables/useReviews'
 
 
 export function useMessages() {
+  const { getUserAverageRating } = useReviews()
   const loading = ref(false)
   const error = ref(null)
   const conversations = ref([])
@@ -37,21 +39,39 @@ export function useMessages() {
           const data = docSnap.data()
           const otherUserId = data.participants.find(id => id !== currentUserId)
 
-          let userData = { name: 'Unknown', avatar: '/placeholder.svg', online: false, lastSeen: null }
+          let userData = { 
+            name: 'Unknown', 
+            avatar: '/placeholder.svg', 
+            online: false, 
+            lastSeen: null,
+            rating: 0,
+            reviewCount: 0
+          }
 
           if (otherUserId) {
             const userRef = doc(db, 'User Information', otherUserId)
             const userSnap = await getDoc(userRef)
+
             if (userSnap.exists()) {
               const userInfo = userSnap.data()
               userData = {
                 name: userInfo.name || 'Unknown User',
-                avatar: userInfo.profileImageUrl || '/placeholder.svg', 
+                avatar: userInfo.profileImageUrl || '/placeholder.svg',
                 online: userInfo.online || false,
-                lastSeen: userInfo.lastSeen || null
+                lastSeen: userInfo.lastSeen || null,
+                rating: userInfo.rating ?? 0,
+                reviewCount: userInfo.reviewCount ?? 0
+              }
+
+              try {
+                const { getUserAverageRating } = useReviews()
+                const { average, total } = await getUserAverageRating(otherUserId)
+                userData.rating = average ?? userData.rating
+                userData.reviewCount = total ?? userData.reviewCount
+              } catch (ratingErr) {
+                console.warn(`⚠️ Failed to get rating for ${otherUserId}`, ratingErr)
               }
             }
-
           }
 
           return {
