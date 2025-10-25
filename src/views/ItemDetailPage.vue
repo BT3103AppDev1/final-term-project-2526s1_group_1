@@ -285,7 +285,11 @@ const sendMessage = async () => {
     alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)
     
     // Redirect to messages page
-    router.push('/messages')
+    router.push({ 
+        name: 'messages', 
+        query: { chatId: conversationId } 
+      })
+
   } catch (error) {
     console.error('Error creating conversation:', error)
     alert('Failed to start conversation. Please try again.')

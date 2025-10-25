@@ -361,12 +361,27 @@ const { getConversations, subscribeToMessages, sendMessage } = useMessages()
 const conversations = ref([])
 const loading = ref(false)
 const currentUserId = ref(null)
+import { useRoute } from 'vue-router'
+const route = useRoute()
 
 onMounted(async () => {
   loading.value = true
   currentUserId.value = auth.currentUser.uid
   conversations.value = await getConversations()
   loading.value = false
+
+  const chatId = route.query.chatId
+  if (chatId) {
+    const targetConv = conversations.value.find(c => c.id === chatId)
+    if (targetConv) {
+      selectConversation(targetConv)
+    } else {
+      setTimeout(() => {
+        const conv = conversations.value.find(c => c.id === chatId)
+        if (conv) selectConversation(conv)
+      }, 800)
+    }
+  }
 })
 
 // Computed
