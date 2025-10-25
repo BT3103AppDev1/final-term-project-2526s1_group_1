@@ -119,9 +119,27 @@
                   @click="showInfo = true">
                     <Info class="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" class="hover:bg-slate-50 hover:border-slate-300 transition-colors">
-                    <MoreVertical class="h-4 w-4" />
-                  </Button>
+                  <div class="relative">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
+                      @click="toggleMenu"
+                    >
+                      <MoreVertical class="h-4 w-4" />
+                    </Button>
+                    <div
+                      v-if="showMenu"
+                      class="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-lg shadow-lg z-50"
+                    >
+                      <button
+                        class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-md"
+                        @click="goToProfile"
+                      >
+                        👤 View Profile
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardHeader>
@@ -257,6 +275,7 @@ import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
 import Input from '@/components/ui/input.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
+import { useRoute, useRouter } from 'vue-router'
 
 // State
 const showInfo = ref(false)
@@ -265,14 +284,37 @@ const newMessage = ref('')
 const searchQuery = ref('')
 const messagesContainer = ref(null)
 const messages = ref([])
+const showMenu = ref(false) 
 
 const { getConversations, subscribeToMessages, sendMessage } = useMessages()
 
 const conversations = ref([])
 const loading = ref(false)
 const currentUserId = ref(null)
-import { useRoute } from 'vue-router'
 const route = useRoute()
+const router = useRouter()  
+
+const toggleMenu = () => {  
+  showMenu.value = !showMenu.value
+}
+
+const goToProfile = () => {
+  const userId =
+    selectedConversation.value?.user?.id ||
+    selectedConversation.value?.otherUserId ||
+    (selectedConversation.value?.participants?.find?.(
+      id => id !== currentUserId.value
+    ))
+
+  if (userId) {
+    router.push(`/profile/${userId}`)
+  } else {
+    alert('Profile not available.')
+  }
+
+  showMenu.value = false
+}
+
 
 onMounted(async () => {
   loading.value = true
