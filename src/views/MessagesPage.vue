@@ -115,32 +115,12 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors"
-                  @click="showInfo = true">
+                  <Button variant="outline" size="sm" class="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-colors">
                     <Info class="h-4 w-4" />
                   </Button>
-                  <div class="relative">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      class="hover:bg-slate-50 hover:border-slate-300 transition-colors"
-                      @click="toggleMenu"
-                    >
-                      <MoreVertical class="h-4 w-4" />
-                    </Button>
-                    <div
-                      v-if="showMenu"
-                      class="absolute right-0 mt-2 w-36 bg-white border border-slate-200 rounded-lg shadow-lg z-50"
-                    >
-                      <button
-                        class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 rounded-md"
-                        @click="goToProfile"
-                      >
-                        👤 View Profile
-                      </button>
-                    </div>
-                  </div>
-
+                  <Button variant="outline" size="sm" class="hover:bg-slate-50 hover:border-slate-300 transition-colors">
+                    <MoreVertical class="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -171,12 +151,6 @@
                         ]"
                       >
                         <p class="text-sm leading-relaxed">{{ message.text }}</p>
-                        <img 
-                          v-if="message.itemImage"
-                          :src="message.itemImage"
-                          alt="Item preview"
-                          class="mt-2 rounded-lg max-h-32 object-cover border border-slate-200"
-                        />
                       </div>
                       <p
                         :class="[
@@ -231,39 +205,6 @@
       </div>
     </div>
   </div>
-<!-- Info Modal -->
-<template v-if="showInfo">
-  <div 
-    class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
-    @click.self="showInfo = false"
-  >
-    <div class="bg-white rounded-2xl shadow-xl p-6 w-[90%] max-w-sm text-center">
-      <h2 class="text-xl font-semibold text-slate-900 mb-2">User Info</h2>
-      <p class="text-slate-700">
-        ⭐ Rating:
-        <span class="font-semibold">
-          {{ selectedConversation?.user?.rating?.toFixed?.(1) || '4.5' }}
-        </span>
-      </p>
-
-      <p class="text-slate-700 mb-6">
-        📝 Reviews:
-        <span class="font-semibold">
-          {{ selectedConversation?.user?.reviewCount || 0 }}
-        </span>
-      </p>
-      <Button 
-        variant="outline" 
-        class="w-full"
-        @click="showInfo = false"
-      >
-        Close
-      </Button>
-    </div>
-  </div>
-</template>
-
-
 </template>
 
 <script setup>
@@ -276,71 +217,167 @@ import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
 import Input from '@/components/ui/input.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
-import { useRoute, useRouter } from 'vue-router'  
-
 
 // State
-const showInfo = ref(false)
 const selectedConversation = ref(null)
 const newMessage = ref('')
 const searchQuery = ref('')
 const messagesContainer = ref(null)
 const messages = ref([])
-const showMenu = ref(false) 
 
+// Mock conversations (replace with Firebase later) ---remove temp
+// const mockConversations = ref([
+//   {
+//     id: "conv-1",
+//     user: {
+//       name: "Alex Rodriguez",
+//       avatar: "/placeholder.svg?key=alex-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
+//       timestamp: "2 min ago",
+//       unread: false,
+//     },
+//     item: "Calculus Textbook - 8th Edition",
+//   },
+//   {
+//     id: "conv-2",
+//     user: {
+//       name: "Emma Davis",
+//       avatar: "/placeholder.svg?key=emma-msg",
+//       online: false,
+//     },
+//     lastMessage: {
+//       text: "Is the textbook still available for next week?",
+//       timestamp: "1 hour ago",
+//       unread: true,
+//     },
+//     item: "Engineering Mechanics Textbook",
+//   },
+//   {
+//     id: "conv-3",
+//     user: {
+//       name: "Mike Johnson",
+//       avatar: "/placeholder.svg?key=mike-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Perfect! The laptop works great. Thanks again!",
+//       timestamp: "3 hours ago",
+//       unread: false,
+//     },
+//     item: "MacBook Pro 13-inch",
+//   },
+//   {
+//     id: "conv-4",
+//     user: {
+//       name: "Sarah Chen",
+//       avatar: "/placeholder.svg?key=sarah-msg",
+//       online: false,
+//     },
+//     lastMessage: {
+//       text: "I'm interested in renting your camera for the weekend",
+//       timestamp: "1 day ago",
+//       unread: true,
+//     },
+//     item: "Canon EOS R Camera",
+//   },
+//   {
+//     id: "conv-5",
+//     user: {
+//       name: "David Kim",
+//       avatar: "/placeholder.svg?key=david-msg",
+//       online: true,
+//     },
+//     lastMessage: {
+//       text: "Great condition! Would you consider $20 for 2 weeks?",
+//       timestamp: "2 days ago",
+//       unread: false,
+//     },
+//     item: "Wireless Headphones",
+//   },
+// ])
+
+// // Mock messages for selected conversation
+// const mockMessages = {
+//   "conv-1": [
+//     {
+//       id: "msg-1",
+//       text: "Hi! I'm interested in renting your Calculus textbook.",
+//       timestamp: "Yesterday 10:30 AM",
+//       isMe: false,
+//     },
+//     {
+//       id: "msg-2",
+//       text: "Sure! It's available. When would you need it?",
+//       timestamp: "Yesterday 10:45 AM",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-3",
+//       text: "I need it for next week. Is $15/week okay?",
+//       timestamp: "Yesterday 11:00 AM",
+//       isMe: false,
+//     },
+//     {
+//       id: "msg-4",
+//       text: "That works! You can pick it up tomorrow at 2 PM.",
+//       timestamp: "Yesterday 11:15 AM",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-5",
+//       text: "Thanks! I'll pick it up tomorrow at 2 PM as discussed.",
+//       timestamp: "2 min ago",
+//       isMe: false,
+//     },
+//   ],
+//   "conv-2": [
+//     {
+//       id: "msg-6",
+//       text: "Is the textbook still available for next week?",
+//       timestamp: "1 hour ago",
+//       isMe: false,
+//     },
+//   ],
+//   "conv-3": [
+//     {
+//       id: "msg-7",
+//       text: "How's the laptop working out?",
+//       timestamp: "3 hours ago",
+//       isMe: true,
+//     },
+//     {
+//       id: "msg-8",
+//       text: "Perfect! The laptop works great. Thanks again!",
+//       timestamp: "3 hours ago",
+//       isMe: false,
+//     },
+//   ],
+// }
 const { getConversations, subscribeToMessages, sendMessage } = useMessages()
+
 const conversations = ref([])
 const loading = ref(false)
 const currentUserId = ref(null)
-const route = useRoute()
-const router = useRouter()  
-
-const toggleMenu = () => {  
-  showMenu.value = !showMenu.value
-}
-
-const goToProfile = () => {
-  const userId =
-    selectedConversation.value?.user?.id ||
-    selectedConversation.value?.otherUserId ||  
-    (selectedConversation.value?.participants?.find?.(
-      id => id !== currentUserId.value
-    ))                                 
-  if (userId) {
-    router.push(`/profile/${userId}`)
-  } else {
-    alert('Profile not available.')
-  }
-
-  showMenu.value = false
-}
 
 onMounted(async () => {
   loading.value = true
   currentUserId.value = auth.currentUser.uid
   conversations.value = await getConversations()
   loading.value = false
-
-  const conversationId = route.query.conversationId
-  if (conversationId) {
-    const found = conversations.value.find(c => c.id === conversationId)
-    if (found) {
-      selectConversation(found)
-    }
-  }
 })
 
 // Computed
 const filteredConversations = computed(() => {
   if (!searchQuery.value) return conversations.value
-
+  
   const query = searchQuery.value.toLowerCase()
-  return conversations.value.filter(conv =>
-    (conv.itemTitle || '').toLowerCase().includes(query) ||
-    (conv.user?.name || '').toLowerCase().includes(query)
+  return conversations.value.filter(conv => 
+    (conv.itemTitle || '').toLowerCase().includes(query)
   )
 })
-
 
 
 // Methods
@@ -378,16 +415,14 @@ const getLastSeenText = (lastSeen) => {
 
 const selectConversation = (conversation) => {
   selectedConversation.value = conversation
-  messages.value = [] 
+  messages.value = [] // 초기화
   subscribeToMessages(conversation.id, (msgs) => {
     messages.value = msgs.map(m => ({
       id: m.id,
       text: m.text,
-      itemImage: m.itemImage || '',
       timestamp: m.createdAt?.toDate?.()?.toLocaleString() || '',
       isMe: m.senderId === currentUserId.value
     }))
-
     nextTick(() => {
       if (messagesContainer.value) {
         messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
@@ -395,6 +430,7 @@ const selectConversation = (conversation) => {
     })
   })
 }
+
 
 const handleSendMessage = async () => {
   if (!newMessage.value.trim() || !selectedConversation.value) return
@@ -409,9 +445,7 @@ const handleSendMessage = async () => {
   })
 }
 
-
 </script>
-
 
 <style scoped>
 /* Custom scrollbar for messages */
