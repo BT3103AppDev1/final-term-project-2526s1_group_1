@@ -315,7 +315,6 @@ const goToProfile = () => {
   showMenu.value = false
 }
 
-
 onMounted(async () => {
   loading.value = true
   currentUserId.value = auth.currentUser.uid
@@ -335,7 +334,6 @@ onMounted(async () => {
     }
   }
 })
-
 // Computed
 const filteredConversations = computed(() => {
   if (!searchQuery.value) return conversations.value
@@ -400,7 +398,6 @@ const selectConversation = (conversation) => {
   })
 }
 
-
 const handleSendMessage = async () => {
   if (!newMessage.value.trim() || !selectedConversation.value) return
   
@@ -413,7 +410,6 @@ const handleSendMessage = async () => {
     }
   })
 }
-
 </script>
 
 <style scoped>

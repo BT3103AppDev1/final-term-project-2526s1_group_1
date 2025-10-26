@@ -4,14 +4,12 @@ import {collection,addDoc,doc,getDoc,getDocs,updateDoc,query,where,orderBy,onSna
 } from 'firebase/firestore'
 import { useReviews } from '@/composables/useReviews'
 
-
 export function useMessages() {
   const { getUserAverageRating } = useReviews()
   const loading = ref(false)
   const error = ref(null)
   const conversations = ref([])
   const messages = ref([])
-
   /**
    * Fetch all conversations for the current user,
    * and merge participant profile data from "User Information" collection.
@@ -148,12 +146,7 @@ export function useMessages() {
       loading.value = false
     }
   }
-
-
-  /**
-   * Create a new conversation (if it doesn’t already exist)
-   * between the current user and another participant.
-   */
+  /*Create a new conversation (if it doesn’t already exist)between the current user and another participant.*/
   const createConversation = async (participantId, item) => {
   loading.value = true
   error.value = null
@@ -214,14 +207,7 @@ export function useMessages() {
   }
 }
 
-  return {
-    loading,
-    error,
-    conversations,
-    messages,
-    getConversations,
-    subscribeToMessages,
-    sendMessage,
-    createConversation
+  return {loading, error, conversations, messages, 
+    getConversations, subscribeToMessages,sendMessage,createConversation
   }
 }
