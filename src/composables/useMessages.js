@@ -1,25 +1,15 @@
 import { ref } from 'vue'
 import { db, auth } from '@/firebase/config'
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
+import {collection,addDoc,doc,getDoc,getDocs,updateDoc,query,where,orderBy,onSnapshot,serverTimestamp
 } from 'firebase/firestore'
+import { useReviews } from '@/composables/useReviews'
 
 export function useMessages() {
+  const { getUserAverageRating } = useReviews()
   const loading = ref(false)
   const error = ref(null)
   const conversations = ref([])
   const messages = ref([])
-
   /**
    * Fetch all conversations for the current user,
    * and merge participant profile data from "User Information" collection.
@@ -47,18 +37,37 @@ export function useMessages() {
           const data = docSnap.data()
           const otherUserId = data.participants.find(id => id !== currentUserId)
 
-          let userData = { name: 'Unknown', avatar: '/placeholder.svg', online: false, lastSeen: null }
+          let userData = { 
+            name: 'Unknown', 
+            avatar: '/placeholder.svg', 
+            online: false, 
+            lastSeen: null,
+            rating: 0,
+            reviewCount: 0
+          }
 
           if (otherUserId) {
             const userRef = doc(db, 'User Information', otherUserId)
             const userSnap = await getDoc(userRef)
+
             if (userSnap.exists()) {
               const userInfo = userSnap.data()
               userData = {
                 name: userInfo.name || 'Unknown User',
-                avatar: userInfo.avatar || '/placeholder.svg',
+                avatar: userInfo.profileImageUrl || '/placeholder.svg',
                 online: userInfo.online || false,
-                lastSeen: userInfo.lastSeen || null
+                lastSeen: userInfo.lastSeen || null,
+                rating: userInfo.rating ?? 0,
+                reviewCount: userInfo.reviewCount ?? 0
+              }
+
+              try {
+                const { getUserAverageRating } = useReviews()
+                const { average, total } = await getUserAverageRating(otherUserId)
+                userData.rating = average ?? userData.rating
+                userData.reviewCount = total ?? userData.reviewCount
+              } catch (ratingErr) {
+                console.warn(`⚠️ Failed to get rating for ${otherUserId}`, ratingErr)
               }
             }
           }
@@ -137,59 +146,68 @@ export function useMessages() {
       loading.value = false
     }
   }
+  /*Create a new conversation (if it doesn’t already exist)between the current user and another participant.*/
+  const createConversation = async (participantId, item) => {
+  loading.value = true
+  error.value = null
 
-  /**
-   * Create a new conversation (if it doesn’t already exist)
-   * between the current user and another participant.
-   */
-  const createConversation = async (participantId, itemId, itemTitle) => {
-    loading.value = true
-    error.value = null
+  try {
+    const currentUser = auth.currentUser
+    if (!currentUser) throw new Error('User not logged in')
 
-    try {
-      const currentUser = auth.currentUser
-      if (!currentUser) throw new Error('User not logged in')
+    const existingQ = query(
+      collection(db, 'conversations'),
+      where('participants', 'array-contains', currentUser.uid)
+    )
+    const snapshot = await getDocs(existingQ)
+    const existing = snapshot.docs.find(
+      d => d.data().participants.includes(participantId)
+    )
 
-      // Check for existing conversation between these two users for the same item
-      const existingQ = query(
-        collection(db, 'conversations'),
-        where('participants', 'array-contains', currentUser.uid)
-      )
-      const snapshot = await getDocs(existingQ)
-      const existing = snapshot.docs.find(
-        d => d.data().participants.includes(participantId) && d.data().itemId === itemId
-      )
-
-      if (existing) return existing.id
-
-      // Otherwise, create a new conversation
+    let conversationRef
+    if (existing) {
+      conversationRef = doc(db, 'conversations', existing.id)
+    } else {
       const docRef = await addDoc(collection(db, 'conversations'), {
         participants: [currentUser.uid, participantId],
-        itemId,
-        itemTitle,
+        itemId: item.id,
+        itemTitle: item.title,
+        createdAt: serverTimestamp(),
         lastMessage: '',
-        lastMessageAt: serverTimestamp(),
-        createdAt: serverTimestamp()
+        lastMessageAt: serverTimestamp()
       })
-
-      return docRef.id
-    } catch (err) {
-      console.error('createConversation Error:', err)
-      error.value = err.message
-      throw err
-    } finally {
-      loading.value = false
+      conversationRef = docRef
     }
-  }
 
-  return {
-    loading,
-    error,
-    conversations,
-    messages,
-    getConversations,
-    subscribeToMessages,
-    sendMessage,
-    createConversation
+    const imageUrl =
+      Array.isArray(item.images) && item.images.length > 0
+        ? item.images[0]
+        : '/placeholder.jpg'
+
+    await addDoc(collection(db, `conversations/${conversationRef.id}/messages`), {
+      senderId: currentUser.uid,
+      senderName: currentUser.displayName || 'Anonymous',
+      text: `Hi! I'm interested in your item: ${item.title}`,
+      itemImage: imageUrl,
+      createdAt: serverTimestamp()
+    })
+
+    await updateDoc(conversationRef, {
+      lastMessage: `Hi! I'm interested in your item: ${item.title}`,
+      lastMessageAt: serverTimestamp()
+    })
+
+    return conversationRef.id
+  } catch (err) {
+    console.error('createConversation Error:', err)
+    error.value = err.message
+    throw err
+  } finally {
+    loading.value = false
+  }
+}
+
+  return {loading, error, conversations, messages, 
+    getConversations, subscribeToMessages,sendMessage,createConversation
   }
 }

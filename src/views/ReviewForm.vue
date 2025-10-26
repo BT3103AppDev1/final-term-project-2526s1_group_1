@@ -127,8 +127,8 @@ const hasExistingReview = await checkExistingReview()
         listingTitle: props.listingTitle,
         rentalId: props.rentalId,
         rating: rating.value,
-        comment: comment.value.trim(),
-        responseRate: responseRate,
+        comment:comment.value.trim(),
+        responseRate:responseRate,
         onTimeDelivery: onTimeDelivery,
         responseRating: responseRating.value,
         conditionRating: conditionRating.value

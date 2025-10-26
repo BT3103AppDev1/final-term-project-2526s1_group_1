@@ -165,7 +165,7 @@
                   </div>
                   <div class="flex items-center gap-1 text-sm text-slate-600">
                     <Star class="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span>{{ item.owner.rating }} ({{ item.owner.reviewCount }} reviews)</span>
+                    <span>{{ ownerRating }} ({{ ownerReviewCount }} reviews)</span>
                   </div>
                 </div>
               </div>
@@ -219,6 +219,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
 import { db, auth } from '@/firebase.js'
 import { useMessages } from '@/composables/useMessages.js'
+import { useReviews } from '@/composables/useReviews'
 import {
   MapPin,
   Star,
@@ -276,15 +277,20 @@ const sendMessage = async () => {
     // Create or find existing conversation
     const conversationId = await createConversation(
       item.value.owner.id,
-      item.value.id,
-      item.value.title
+      JSON.parse(JSON.stringify(item.value))
     )
+
+
 
     // Show success message
     alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)
     
     // Redirect to messages page
-    router.push('/messages')
+    router.push({ 
+        name: 'messages', 
+        query: { chatId: conversationId } 
+      })
+
   } catch (error) {
     console.error('Error creating conversation:', error)
     alert('Failed to start conversation. Please try again.')
@@ -306,6 +312,16 @@ const fetchItemData = async (itemId) => {
     if (itemSnap.exists()) {
       const itemData = itemSnap.data()
       console.log('Item data from Firebase:', itemData)
+
+      let ownerAvatar = itemData.ownerAvatar || '/placeholder-user.jpg'
+      if (itemData.ownerId) {
+        const ownerRef = doc(db, 'User Information', itemData.ownerId)
+        const ownerSnap = await getDoc(ownerRef)
+        if (ownerSnap.exists()) {
+          ownerAvatar = ownerSnap.data().profileImageUrl || ownerAvatar
+        }
+      }
+
       
       // Transform Firebase data to match component expectations
       item.value = {
@@ -334,8 +350,8 @@ const fetchItemData = async (itemId) => {
         owner: {
           id: itemData.ownerId,
           name: itemData.ownerName || 'Anonymous User',
-          avatar: itemData.ownerAvatar || '/placeholder-user.jpg',
-          rating: itemData.ownerRating || 4.5,
+          avatar: ownerAvatar,
+          rating: itemData.ownerRating || 'no ratings record',
           reviewCount: itemData.ownerReviewCount || 0,
           verified: itemData.ownerVerified || false
         }
@@ -353,15 +369,26 @@ const fetchItemData = async (itemId) => {
 }
 
 // Load item data based on route parameter
-onMounted(() => {
+const { getUserAverageRating } = useReviews()
+const ownerRating = ref(0)
+const ownerReviewCount = ref(0)
+
+onMounted(async () => {
   const itemId = route.params.id
   console.log('ItemDetailPage mounted with ID:', itemId)
   
   if (itemId) {
-    fetchItemData(itemId)
+    await fetchItemData(itemId)
+
+    if (item.value?.owner?.id) {
+      const { average, total } = await getUserAverageRating(item.value.owner.id)
+      ownerRating.value = average
+      ownerReviewCount.value = total
+    }
   } else {
     error.value = 'No item ID provided'
     loading.value = false
   }
 })
+
 </script>

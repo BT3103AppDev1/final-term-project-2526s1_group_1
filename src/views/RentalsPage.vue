@@ -84,9 +84,6 @@
               <router-link :to="`/item/${listing.id}`"class="text-blue-500 hover:underline text-sm">
                 View Item
               </router-link>
-              <button class="text-green-500 hover:underline text-sm"@click="editListing(listing.id)">
-                Edit
-              </button>
               <button 
                 v-if="listing.status === 'Rented'" 
                 @click="markAsReturned(listing.id, listing.currentRentalId)"

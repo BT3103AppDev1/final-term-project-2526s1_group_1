@@ -50,12 +50,12 @@
                 <CustomSelect 
                   v-model="formData.category" 
                   :options="[
-                    { value: 'Textbooks', label: '📚 Textbooks' },
-                    { value: 'Electronics', label: '💻 Electronics' },
-                    { value: 'Equipment', label: '🔧 Equipment' },
-                    { value: 'Supplies', label: '📝 Supplies' },
-                    { value: 'Furniture', label: '🪑 Furniture' },
-                    { value: 'Clothing', label: '👕 Clothing' }
+                    { value: 'textbooks', label: '📚 Textbooks' },
+                    { value: 'electronics', label: '💻 Electronics' },
+                    { value: 'equipment', label: '🔧 Equipment' },
+                    { value: 'supplies', label: '📝 Supplies' },
+                    { value: 'furniture', label: '🪑 Furniture' },
+                    { value: 'clothing', label: '👕 Clothing' }
                   ]"
                   placeholder="Select category"
                 />
