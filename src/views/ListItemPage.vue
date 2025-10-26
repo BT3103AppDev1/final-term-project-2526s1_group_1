@@ -50,12 +50,12 @@
                 <CustomSelect 
                   v-model="formData.category" 
                   :options="[
-                    { value: 'textbooks', label: '📚 Textbooks' },
-                    { value: 'electronics', label: '💻 Electronics' },
-                    { value: 'equipment', label: '🔧 Equipment' },
-                    { value: 'supplies', label: '📝 Supplies' },
-                    { value: 'furniture', label: '🪑 Furniture' },
-                    { value: 'clothing', label: '👕 Clothing' }
+                    { value: 'Textbooks', label: '📚 Textbooks' },
+                    { value: 'Electronics', label: '💻 Electronics' },
+                    { value: 'Equipment', label: '🔧 Equipment' },
+                    { value: 'Supplies', label: '📝 Supplies' },
+                    { value: 'Furniture', label: '🪑 Furniture' },
+                    { value: 'Clothing', label: '👕 Clothing' }
                   ]"
                   placeholder="Select category"
                 />
@@ -66,9 +66,9 @@
                 <CustomSelect 
                   v-model="formData.condition" 
                   :options="[
-                    { value: 'excellent', label: '✨ Excellent - Like new' },
-                    { value: 'good', label: '👍 Good - Minor wear' },
-                    { value: 'fair', label: '⚖️ Fair - Visible wear' }
+                    { value: 'Excellent', label: '✨ Excellent - Like new' },
+                    { value: 'Good', label: '👍 Good - Minor wear' },
+                    { value: 'Fair', label: '⚖️ Fair - Visible wear' }
                   ]"
                   placeholder="Select condition"
                 />
@@ -244,10 +244,10 @@
                 <CustomSelect 
                   v-model="formData.location" 
                   :options="[
-                    { value: 'campus-north', label: '🏫 Campus North' },
-                    { value: 'campus-south', label: '🏫 Campus South' },
-                    { value: 'campus-center', label: '🏫 Campus Center' },
-                    { value: 'off-campus', label: '🏠 Off Campus (specify in notes)' }
+                    { value: 'Campus North', label: '🏫 Campus North' },
+                    { value: 'Campus South', label: '🏫 Campus South' },
+                    { value: 'Campus Center', label: '🏫 Campus Center' },
+                    { value: 'Off Campus', label: '🏠 Off Campus (specify in notes)' }
                   ]"
                   placeholder="Select pickup location"
                   class="h-12 border-slate-300 focus:border-red-500 focus:ring-red-500/20 bg-white/70 backdrop-blur-sm"
