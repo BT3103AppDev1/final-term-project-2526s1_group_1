@@ -226,12 +226,6 @@
           >
             Create Account
           </router-link>
-          <router-link 
-            to="/browse"
-            class="inline-flex items-center justify-center px-6 lg:px-8 py-3 lg:py-4 bg-transparent text-white font-semibold rounded-xl border-2 border-white hover:bg-white hover:text-orange-600 transition-all duration-200 text-sm lg:text-base"
-          >
-            Browse Items
-          </router-link>
         </div>
       </div>
     </section>
@@ -255,7 +249,6 @@
           <div>
             <h5 class="font-semibold text-white mb-4">Platform</h5>
             <ul class="space-y-2 text-sm">
-              <li><router-link to="/browse" class="hover:text-orange-400">Browse Items</router-link></li>
               <li><router-link to="/auth/register" class="hover:text-orange-400">Sign Up</router-link></li>
               <li><router-link to="/auth/login" class="hover:text-orange-400">Sign In</router-link></li>
             </ul>

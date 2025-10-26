@@ -123,8 +123,8 @@
           </Card>
         </div>
         <!-- Summary Column -->
-        <div class="border-0 shadow-lg bg-amber-50">
-          <Card class="sticky top-24">
+        <div>
+          <Card class="sticky top-24 bg-amber-50">
             <CardHeader>
               <CardTitle>Rental Summary</CardTitle>
             </CardHeader>

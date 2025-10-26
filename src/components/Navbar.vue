@@ -1,7 +1,7 @@
 <template>
   <nav id="nav" class="navbar">
     <!-- Logo Section -->
-    <router-link to="/" class="nav-logo-link">
+    <router-link :to="isLoggedIn ? '/browse' : '/'" class="nav-logo-link">
       <div class="nav-logo">
         <div class="logo-icon">PS</div>
         <span class="logo-text">PeerSwap</span>
@@ -10,7 +10,7 @@
     <!-- Navigation Links -->
     <div class="link-button-container">
       <div class="nav-links">
-        <router-link to="/browse" class="nav-link">Browse</router-link>
+        <router-link v-if="!isLandingPage" to="/browse" class="nav-link">Browse</router-link>
         <router-link v-if="isLoggedIn" to="/list-item" class="nav-link">List Item</router-link>
         <router-link v-if="isLoggedIn" to="/rentals" class="nav-link">My Rentals</router-link>
         <router-link v-if="isLoggedIn" to="/messages" class="nav-link">Messages</router-link>
@@ -68,13 +68,14 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/firebase/config'
 
 // Router and auth
 const router = useRouter()
+const route = useRoute()
 const auth = getAuth()
 
 // Reactive data
@@ -90,11 +91,19 @@ const userProfileImage = computed(() => {
   const imageUrl = userProfile.value?.profileImageUrl || defaultProfileImage
   return imageUrl
 })
+
+// Check if we're on the landing page
+const isLandingPage = computed(() => {
+  return route.path === '/'
+})
 const toggleDropdown = () => {dropdownOpen.value = !dropdownOpen.value}
 const closeDropdown = () => {dropdownOpen.value = false}
 const toggleMobileMenu = () => {mobileMenuOpen.value = !mobileMenuOpen.value}
 const logout = async () => {
     try {
+        // Close dropdown immediately
+        dropdownOpen.value = false
+        
         // Update lastSeen timestamp before signing out
         if (uid.value) {
             const userDocRef = doc(db, "User Information", uid.value)
@@ -105,13 +114,13 @@ const logout = async () => {
         }
         
         await signOut(auth)
-        dropdownOpen.value = false
         router.push('/')
     } catch (error) {
         console.error('Error during logout:', error)
+        // Ensure dropdown is closed even if error occurs
+        dropdownOpen.value = false
         // Still sign out even if updating lastSeen fails
         await signOut(auth)
-        dropdownOpen.value = false
         router.push('/')
     }
 }

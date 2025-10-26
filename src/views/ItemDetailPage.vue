@@ -1,5 +1,14 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <!-- Back to Browse Button -->
+    <div class="container mx-auto px-10 pt-4 pb-2">
+      <Button variant="ghost" size="sm" as-child class="border border-gray-600 mb-4">
+        <router-link to="/browse" class="flex items-center font-bold">
+          <ArrowLeftCircleIcon class="mr-2"/> Back to Browse
+        </router-link>
+      </Button>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="container mx-auto px-4 py-12">
       <div class="flex flex-col items-center justify-center min-h-[400px]">
@@ -22,15 +31,7 @@
                   :alt="item.title"
                   class="w-full h-96 sm:h-[500px] object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <!-- Save Button -->
-                <Button
-                  size="sm"
-                  class="absolute top-4 right-4 bg-white/90 backdrop-blur-md hover:bg-white shadow-lg border-0"
-                  @click="toggleSave"
-                >
-                  <Heart :class="['h-4 w-4 mr-2', { 'fill-red-500 text-red-500': isSaved }]" />
-                  {{ isSaved ? 'Saved' : 'Save' }}
-                </Button>
+
               </div>
               
               <!-- Thumbnail Gallery -->
@@ -227,7 +228,8 @@ import {
   Heart,
   MessageCircle,
   Shield,
-  ArrowLeft
+  ArrowLeft,
+  ArrowLeftCircle as ArrowLeftCircleIcon
 } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card.vue'
