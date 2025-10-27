@@ -43,7 +43,6 @@
             <h3 class="text-lg font-semibold mb-1">{{ request.title }}</h3>
             <p class="text-gray-600 text-sm mb-2">Requested by: {{ request.borrowerName }}<br />
               Duration: {{ request.duration }} week(s)<br />
-              Start Date: {{ request.startDate }}<br />
               Total: ${{ request.totalCost }}
             </p>
             <p class="text-gray-700 text-sm mb-3">{{ request.message }}</p>
