@@ -228,6 +228,22 @@ onMounted(async () => {//get itemdetails from firestore
         ownerId: data.ownerId, ownerName: data.ownerName,ownerAvatar: data.ownerAvatar || '/default-user.png',
         securityDeposit: data.securityDeposit || 0, minRentalPeriod: data.minRentalPeriod || 1,maxRentalPeriod: data.maxRentalPeriod || 4
       }
+
+      try {
+          const ownerRef = doc(db, 'User Information', data.ownerId)
+          const ownerSnap = await getDoc(ownerRef)
+          if (ownerSnap.exists()) {
+            console.log('Owner data found:', ownerSnap.data())
+            const ownerData = ownerSnap.data()
+            const resolvedAvatar = ownerData.profileImageUrl || '/default-user.png'
+            item.value = { ...item.value, ownerAvatar: resolvedAvatar }
+          } else {
+            console.warn('No owner doc found for', data.ownerId)
+          }
+        } catch (err) {
+          console.error('Error fetching owner info:', err)
+        }
+
     } else {
       alert('Item not found.')
       router.push('/browse')
