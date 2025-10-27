@@ -106,12 +106,11 @@
                     type="number"
                     class="pl-10"
                     :min="item.minRentalPeriod"
-                    :max="item.maxRentalPeriod"
                   />
                 </div>
                 <p class="text-xs text-muted-foreground">
-                  Minimum: {{ item.minRentalPeriod }} {{ unit }}(s),
-                  Maximum: {{ item.maxRentalPeriod }} {{ unit }}(s)
+                  Minimum: {{ item.minRentalPeriod }} {{ unit }}(s)
+                  <!-- Maximum: {{ item.maxRentalPeriod }} {{ unit }}(s) -->
                 </p>
               </div>
 
@@ -190,8 +189,8 @@ const totalRentalCost = computed(() => item.value ? item.value.price * duration.
 const totalCost = computed(() => item.value ? totalRentalCost.value + item.value.securityDeposit : 0)
 const isFormValid = computed(() =>
   message.value.trim().length > 0 &&
-  duration.value >= (item.value?.minRentalPeriod || 1) &&
-  duration.value <= (item.value?.maxRentalPeriod || 4)
+  duration.value >= (item.value?.minRentalPeriod || 1)
+  //duration.value <= (item.value?.maxRentalPeriod || 4)
 )
 
 
