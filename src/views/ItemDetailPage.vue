@@ -76,17 +76,10 @@
               
               <div class="space-y-6">
                 <div>
-                  <h3 class="font-semibold mb-4">Specifications</h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div
-                      v-for="[key, value] in Object.entries(item.specifications)"
-                      :key="key"
-                      class="flex justify-between"
-                    >
-                      <span class="text-slate-600">{{ key }}:</span>
-                      <span class="font-medium">{{ value }}</span>
-                    </div>
-                  </div>
+                  <h3 class="font-semibold mb-4">Availability Notes</h3>
+                  <p class="text-slate-700 leading-relaxed">
+                    {{ item.availabilityNotes || 'No additional notes provided by the owner.' }}
+                  </p>
                 </div>
                 
                 <div>
@@ -343,7 +336,7 @@ const fetchItemData = async (itemId) => {
           }) : 'Recently posted',
         available: itemData.status === 'active' || itemData.available !== false,
         images: itemData.images && itemData.images.length > 0 ? itemData.images : ['/placeholder.jpg'],
-        specifications: itemData.specifications || {},
+        availabilityNotes: itemData.availabilityNotes || '',
         rentalTerms: itemData.rentalTerms || [
           'Item must be returned in the same condition',
           'No damage or misuse allowed',
