@@ -77,7 +77,7 @@
               <CardDescription>Specify your rental duration and message</CardDescription>
             </CardHeader>
             <CardContent class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
+              <!-- <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
                   <Label for="startDate">Start Date</Label>
                   <div class="relative">
@@ -93,7 +93,7 @@
                     <Input id="endDate" v-model="endDate" type="date" class="pl-10" :min="startDate || minDate" />
                   </div>
                 </div>
-              </div>
+              </div> -->
 
               <div class="space-y-2">
                 <Label for="duration">Duration ({{ unit }}s)</Label>
@@ -174,8 +174,8 @@ const itemId = route.params.id
 const loading = ref(true)
 const submitting = ref(false)
 const item = ref(null)
-const startDate = ref('')
-const endDate = ref('')
+// const startDate = ref('')
+// const endDate = ref('')
 const message = ref('')
 const duration = ref(1)
 const unit = computed(() => item.value?.period || 'week')
@@ -183,8 +183,12 @@ const unit = computed(() => item.value?.period || 'week')
 const minDate = computed(() => new Date().toISOString().split('T')[0])
 const totalRentalCost = computed(() => item.value ? item.value.price * duration.value : 0)
 const totalCost = computed(() => item.value ? totalRentalCost.value + item.value.securityDeposit : 0)
-const isFormValid = computed(() =>startDate.value && endDate.value && message.value.trim().length > 0 &&
-  duration.value >= (item.value?.minRentalPeriod || 1) && duration.value <= (item.value?.maxRentalPeriod || 4))
+const isFormValid = computed(() =>
+  message.value.trim().length > 0 &&
+  duration.value >= (item.value?.minRentalPeriod || 1) &&
+  duration.value <= (item.value?.maxRentalPeriod || 4)
+)
+
 
 const getInitials = (name) => name?.split(' ').map(n => n[0]).join('') || '?'//helper function
 
@@ -198,7 +202,7 @@ const handleSubmitRequest = async () => {
       title: item.value.title,photoUrl: item.value.image || '',
       borrowerId: user.uid,borrowerName: user.displayName || 'Anonymous',
       lenderId: item.value.ownerId, lenderName: item.value.ownerName,
-      itemId: itemId, startDate: startDate.value, endDate: endDate.value,
+      itemId: itemId, 
       duration: duration.value, message: message.value, totalRentalCost: totalRentalCost.value,
       totalCost: totalCost.value, status: 'Pending', createdAt: serverTimestamp()
     }
