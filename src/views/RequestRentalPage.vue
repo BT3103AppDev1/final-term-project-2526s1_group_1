@@ -96,7 +96,7 @@
               </div>
 
               <div class="space-y-2">
-                <Label for="duration">Duration (weeks)</Label>
+                <Label for="duration">Duration ({{ unit }}s)</Label>
                 <div class="relative">
                   <Clock class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -109,7 +109,8 @@
                   />
                 </div>
                 <p class="text-xs text-muted-foreground">
-                  Minimum: {{ item.minRentalPeriod }} week(s), Maximum: {{ item.maxRentalPeriod }} week(s)
+                  Minimum: {{ item.minRentalPeriod }} {{ unit }}(s),
+                  Maximum: {{ item.maxRentalPeriod }} {{ unit }}(s)
                 </p>
               </div>
 
@@ -130,7 +131,7 @@
             <CardContent class="space-y-4">
               <div class="space-y-3">
                 <div class="flex justify-between text-sm">
-                  <span>Rental cost ({{ duration }} week{{ duration !== 1 ? 's' : '' }})</span>
+                  <span>Rental cost ({{ duration }} {{ unit }}{{ duration !== 1 ? 's' : '' }})</span>
                   <span>${{ totalRentalCost }}</span>
                 </div>
                 <Separator />
@@ -177,6 +178,7 @@ const startDate = ref('')
 const endDate = ref('')
 const message = ref('')
 const duration = ref(1)
+const unit = computed(() => item.value?.period || 'week')
 
 const minDate = computed(() => new Date().toISOString().split('T')[0])
 const totalRentalCost = computed(() => item.value ? item.value.price * duration.value : 0)
