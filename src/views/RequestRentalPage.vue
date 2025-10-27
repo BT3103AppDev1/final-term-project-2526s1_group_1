@@ -51,24 +51,25 @@
 
           <!-- Owner Info -->
           <Card class="border-0 shadow-lg bg-stone-100">
-            <CardHeader>
-              <CardTitle>Item Owner</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div class="flex items-center gap-4">
-                <Avatar class="h-12 w-12">
-                  <AvatarImage :src="item.ownerAvatar" />
-                  <AvatarFallback>{{ getInitials(item.ownerName) }}</AvatarFallback>
-                </Avatar>
-                <div class="flex-1">
-                  <h4 class="font-semibold">{{ item.ownerName }}</h4>
-                  <p class="text-sm text-muted-foreground">
-                    Listed by user <span class="font-medium">{{ item.ownerId }}</span>
-                  </p>
-                </div>
+          <CardHeader>
+            <CardTitle>Item Owner</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="flex items-center gap-4">
+              <Avatar class="h-12 w-12">
+                <AvatarImage :src="item.ownerAvatar" />
+                <AvatarFallback>{{ getInitials(item.ownerName) }}</AvatarFallback>
+              </Avatar>
+              <div class="flex-1">
+                <h4 class="font-semibold">{{ item.ownerName }}</h4>
+                <p class="text-sm text-muted-foreground">
+                  ⭐ Rating: {{ ownerRating }} | 📝 Reviews: {{ ownerReviewCount }}
+                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CardContent>
+        </Card>
+
 
           <!-- Rental Details Form -->
           <Card class="border-0 shadow-lg bg-stone-100">
@@ -167,6 +168,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import { Separator } from '@/components/ui/Separator.vue'
 import { auth, db } from '@/firebase/config'
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { useReviews } from '@/composables/useReviews'
 
 const route = useRoute()
 const router = useRouter()
@@ -179,6 +181,9 @@ const item = ref(null)
 const message = ref('')
 const duration = ref(1)
 const unit = computed(() => item.value?.period || 'week')
+const { getUserAverageRating } = useReviews()
+const ownerRating = ref(0)
+const ownerReviewCount = ref(0)
 
 const minDate = computed(() => new Date().toISOString().split('T')[0])
 const totalRentalCost = computed(() => item.value ? item.value.price * duration.value : 0)
@@ -237,6 +242,9 @@ onMounted(async () => {//get itemdetails from firestore
             const ownerData = ownerSnap.data()
             const resolvedAvatar = ownerData.profileImageUrl || '/default-user.png'
             item.value = { ...item.value, ownerAvatar: resolvedAvatar }
+            const { average, total } = await getUserAverageRating(data.ownerId)
+            ownerRating.value = average
+            ownerReviewCount.value = total
           } else {
             console.warn('No owner doc found for', data.ownerId)
           }
