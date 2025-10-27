@@ -84,11 +84,11 @@
               <router-link :to="`/item/${listing.id}`"class="text-blue-500 hover:underline text-sm">
                 View Item
               </router-link>
-              <button 
-                v-if="listing.status === 'Rented'" 
-                @click="markAsReturned(listing.id, listing.currentRentalId)"
-                class="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs"
-              >Mark as Returned</button>
+              <button v-if="listing.status === 'Rented'" @click="markAsReturned(listing.id, listing.currentRentalId)"
+                class="bg-blue-500 text-white px-2 py-1 rounded-md hover:bg-blue-600 text-xs">
+              Mark as Returned</button>
+              <button @click="deleteItem(listing.id)" class="bg-red-800 text-white px-2 py-1 roudned-md text-xs">
+                Delete</button>
             </div>
           </div>
         </div>
@@ -110,7 +110,7 @@
 <script setup>
 import {ref, onMounted} from 'vue'
 import {auth, db} from '@/firebase/config'
-import {collection,query,where,getDocs,doc,updateDoc,serverTimestamp} from 'firebase/firestore'
+import {collection,query,where,getDocs,doc,updateDoc, deleteDoc,serverTimestamp} from 'firebase/firestore'
 import ReviewForm from '@/views/ReviewForm.vue'
 const showReviewModal = ref(false)
 const reviewingRental = ref(null)
@@ -258,7 +258,6 @@ const markAsReturned = async (itemId, rentalId) => {
       returnedAt: serverTimestamp(),
       lenderMarkedReturned: true
     })
-
     await updateDoc(doc(db, 'listings', itemId), {
       status: 'Available',
       completedAt: serverTimestamp(),
@@ -274,9 +273,13 @@ const markAsReturned = async (itemId, rentalId) => {
     }
     alert('Item returned and available for rent!')
 }
+const deleteItem= async(itemId)=> {//delete func to allow for delisting of items
+  if (!confirm('Confirm that you want to delete listing?')) {
+    return
+  }
+  await deleteDoc(doc(db,'listings',itemId))//remove from firebase
+  lentItems.value = lentItems.value.filter(item => item.id!==itemId)
+  alert('Item deleted from Browse Page!')
+}
 onMounted(fetchRentals)
 </script>
-
-<style scoped>
-.rentals-page {background-color: #f8fafc;min-height: 100vh;}
-</style>

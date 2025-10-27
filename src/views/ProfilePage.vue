@@ -95,10 +95,6 @@
                   <MessageCircle class="h-4 w-4 mr-2" />
                   Send Message
                 </Button>
-                <Button variant="outline" class="w-full border-slate-300 hover:bg-slate-50" size="sm">
-                  <Heart :class="isFollowing ? 'fill-red-500 text-red-500' : ''" class="h-4 w-4 mr-2" />
-                  {{ isFollowing ? 'Following' : 'Follow' }}
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -350,7 +346,6 @@
                     </div>
                   </CardContent>
                 </Card>
-                
                 <Card class="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 overflow-hidden group hover:shadow-xl transition-all duration-200">
                   <CardContent class="p-6 text-center relative">
                     <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -367,7 +362,6 @@
                     </div>
                   </CardContent>
                 </Card>
-                
                 <Card class="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-100 overflow-hidden group hover:shadow-xl transition-all duration-200">
                   <CardContent class="p-6 text-center relative">
                     <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -425,7 +419,7 @@
                       </div>
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
-                          <span class="text-slate-600 font-medium">On-time Delivery</span>
+                          <span class="text-slate-600 font-medium">Item Condition</span>
                           <span class="font-bold text-blue-600">{{Math.min(completionRatePercentage,100)}}%</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
@@ -435,7 +429,7 @@
                       <div class="bg-white/60 rounded-xl p-4">
                         <div class="flex justify-between items-center mb-2">
                           <span class="text-slate-600 font-medium">Customer Satisfaction</span>
-                          <span class="font-bold text-purple-600">{{customerSatisfaction.toFixed(1)}}/5.0</span>
+                          <span class="font-bold text-purple-600">{{(customerSatisfaction||0).toFixed(1)}}/5.0</span>
                         </div>
                         <div class="w-full bg-slate-200 rounded-full h-2">
                           <div class="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" :style="`width: ${Math.min((customerSatisfaction/5)*100, 100)}%`"></div>
@@ -456,15 +450,14 @@
 <script setup>
 import { ref,onMounted,onBeforeUnmount,computed,watch } from 'vue'
 import {useRoute,useRouter} from 'vue-router'
-import {Star,MapPin,Shield,Edit,MessageCircle,Heart,Eye
-} from 'lucide-vue-next'
+import {Star,MapPin,Shield,Edit,MessageCircle} from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import {Card,CardContent,CardDescription,CardHeader,CardTitle
 } from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
+import ItemCard from '@/components/ui/ItemCard.vue'
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs.vue'
 import {Separator} from '@/components/ui/Separator.vue'
-import ItemCard from '@/components/ui/ItemCard.vue'
 import ReviewCard from '@/components/ReviewCard.vue'
 import {useUserProfile} from '@/composables/useUserProfile'
 import {useListings} from '@/composables/useListings'
@@ -544,9 +537,18 @@ const loadUserStats = async (userId = null) => {
       user.value.reviewCount =stats.totalReviews
     }
 }
-const responseRatePercentage = computed(() => userStats.value?.responseRate || 0)
-const completionRatePercentage = computed(() => userStats.value?.completionRate || 0)
-const customerSatisfaction = computed(() => user.value?.rating || 0)
+const responseRatePercentage = computed(() => {
+  const val = userStats.value?.responseRate || 0
+  return typeof val === 'number' ? val : 0
+})
+const completionRatePercentage = computed(() => {//item cond but misnaming
+  const val = userStats.value?.completionRate || 0
+  return typeof val === 'number' ? val : 0
+})
+const customerSatisfaction = computed(() => {
+  const val = user.value?.rating || userStats.value?.customerSatisfaction || 0
+  return typeof val === 'number' ? parseFloat(val) : 0
+})
 onMounted(async () => {
   if (!authInitialized.value) {
     await new Promise((resolve) => {
@@ -569,11 +571,6 @@ onMounted(async () => {
   } else {await loadUserItems()
     await loadUserReviews()
   }
-  if (profileUserId.value) {
-    await loadUserStats(profileUserId.value)
-  } else {await loadUserStats()
-  }
-
 const handleReviewSubmitted = async (event) => {//listen for reviews entry
     console.log('Review submission event received!')
     await new Promise(resolve => setTimeout(resolve, 500))

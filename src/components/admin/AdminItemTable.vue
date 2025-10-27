@@ -47,28 +47,23 @@ const items = ref([
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
-
 .table-container {
   overflow-x: auto;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
 }
-
 th, td {
   padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
-
 th {
   background-color: #f9fafb;
   font-weight: 600;
   color: #374151;
 }
-
 .action-btn {
   padding: 0.25rem 0.5rem;
   margin: 0 0.25rem;
@@ -77,12 +72,10 @@ th {
   font-size: 0.75rem;
   cursor: pointer;
 }
-
 .edit {
   background-color: #f59e0b;
   color: white;
 }
-
 .delete {
   background-color: #ef4444;
   color: white;

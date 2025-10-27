@@ -21,7 +21,6 @@
         <h2 class="text-3xl font-bold text-slate-900 mb-2">Request Rental</h2>
         <p class="text-muted-foreground">Send a rental request to the item owner</p>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Form Column -->
         <div class="lg:col-span-2 space-y-6">
@@ -134,35 +133,14 @@
                   <span>Rental cost ({{ duration }} week{{ duration !== 1 ? 's' : '' }})</span>
                   <span>${{ totalRentalCost }}</span>
                 </div>
-                <div class="flex justify-between text-sm">
-                  <span>Security deposit</span>
-                  <span>${{ item.securityDeposit }}</span>
-                </div>
                 <Separator />
                 <div class="flex justify-between font-semibold">
                   <span>Total</span>
                   <span>${{ totalCost }}</span>
                 </div>
               </div>
-
-              <div class="bg-muted/50 p-3 rounded-lg">
-                <div class="flex items-start gap-2">
-                  <Shield class="h-4 w-4 text-primary mt-0.5" />
-                  <div class="text-xs">
-                    <p class="font-medium mb-1">Security Deposit</p>
-                    <p class="text-muted-foreground">
-                      Fully refunded when the item is returned in good condition.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                class="w-full"
-                size="lg"
-                @click="handleSubmitRequest"
-                :disabled="!isFormValid || submitting"
-              >
+              <Button class="w-full" size="lg" @click="handleSubmitRequest"
+                :disabled="!isFormValid || submitting">
                 {{ submitting ? 'Sending Request...' : 'Send Rental Request' }}
               </Button>
             </CardContent>
@@ -177,9 +155,6 @@
 // Core Vue
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
-// UI Components
-import Navbar from '@/components/Navbar.vue'
 import { Calendar, Shield, ArrowLeft, Clock, ArrowLeftCircleIcon } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card.vue'
@@ -189,12 +164,9 @@ import Textarea from '@/components/ui/TextArea.vue'
 import Badge from '@/components/ui/Badge.vue'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import { Separator } from '@/components/ui/Separator.vue'
-
-// Firebase
 import { auth, db } from '@/firebase/config'
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
-// Router & State
 const route = useRoute()
 const router = useRouter()
 const itemId = route.params.id
@@ -206,54 +178,29 @@ const endDate = ref('')
 const message = ref('')
 const duration = ref(1)
 
-// Computed
 const minDate = computed(() => new Date().toISOString().split('T')[0])
 const totalRentalCost = computed(() => item.value ? item.value.price * duration.value : 0)
 const totalCost = computed(() => item.value ? totalRentalCost.value + item.value.securityDeposit : 0)
-const isFormValid = computed(() =>
-  startDate.value &&
-  endDate.value &&
-  message.value.trim().length > 0 &&
-  duration.value >= (item.value?.minRentalPeriod || 1) &&
-  duration.value <= (item.value?.maxRentalPeriod || 4)
-)
+const isFormValid = computed(() =>startDate.value && endDate.value && message.value.trim().length > 0 &&
+  duration.value >= (item.value?.minRentalPeriod || 1) && duration.value <= (item.value?.maxRentalPeriod || 4))
 
-// Helpers
-const getInitials = (name) => name?.split(' ').map(n => n[0]).join('') || '?'
+const getInitials = (name) => name?.split(' ').map(n => n[0]).join('') || '?'//helper function
 
-// Submit rental request
+//Submit rental req
 const handleSubmitRequest = async () => {
   if (!isFormValid.value) return alert('Please complete all required fields.')
-
   const user = auth.currentUser
-  if (!user) {
-    alert('You must be logged in to send a request.')
-    return router.push('/login')
-  }
-
   submitting.value = true
   try {
     const rentalData = {
-      title: item.value.title,
-      photoUrl: item.value.image || '',
-      borrowerId: user.uid,
-      borrowerName: user.displayName || 'Anonymous',
-      lenderId: item.value.ownerId,
-      lenderName: item.value.ownerName,
-      itemId: itemId,
-      startDate: startDate.value,
-      endDate: endDate.value,
-      duration: duration.value,
-      message: message.value,
-      totalRentalCost: totalRentalCost.value,
-      securityDeposit: item.value.securityDeposit,
-      totalCost: totalCost.value,
-      status: 'Pending',
-      createdAt: serverTimestamp()
+      title: item.value.title,photoUrl: item.value.image || '',
+      borrowerId: user.uid,borrowerName: user.displayName || 'Anonymous',
+      lenderId: item.value.ownerId, lenderName: item.value.ownerName,
+      itemId: itemId, startDate: startDate.value, endDate: endDate.value,
+      duration: duration.value, message: message.value, totalRentalCost: totalRentalCost.value,
+      totalCost: totalCost.value, status: 'Pending', createdAt: serverTimestamp()
     }
-
     await addDoc(collection(db, 'rentals'), rentalData)
-
     alert('Rental request sent successfully!')
     router.push('/rentals')
   } catch (err) {
@@ -263,30 +210,17 @@ const handleSubmitRequest = async () => {
     submitting.value = false
   }
 }
-
-// Fetch item details from Firestore
-onMounted(async () => {
+onMounted(async () => {//get itemdetails from firestore
   try {
     const docRef = doc(db, 'listings', itemId)
     const docSnap = await getDoc(docRef)
-
     if (docSnap.exists()) {
       const data = docSnap.data()
-      item.value = {
-        id: docSnap.id,
-        title: data.title,
-        description: data.description,
-        price: data.price,
-        period: data.period,
-        category: data.category,
-        condition: data.condition,
-        image: data.image,
-        ownerId: data.ownerId,
-        ownerName: data.ownerName,
-        ownerAvatar: data.ownerAvatar || '/default-user.png',
-        securityDeposit: data.securityDeposit || 0,
-        minRentalPeriod: data.minRentalPeriod || 1,
-        maxRentalPeriod: data.maxRentalPeriod || 4
+      item.value = {id: docSnap.id, title: data.title, description: data.description,
+        price: data.price, period: data.period, category: data.category,
+        condition: data.condition,image: data.images && data.images.length > 0 ? data.images[0]:'/placeholder.jpg',
+        ownerId: data.ownerId, ownerName: data.ownerName,ownerAvatar: data.ownerAvatar || '/default-user.png',
+        securityDeposit: data.securityDeposit || 0, minRentalPeriod: data.minRentalPeriod || 1,maxRentalPeriod: data.maxRentalPeriod || 4
       }
     } else {
       alert('Item not found.')
@@ -300,7 +234,3 @@ onMounted(async () => {
   }
 })
 </script>
-
-<style scoped>
-/* Optional styling */
-</style>
