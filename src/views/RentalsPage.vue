@@ -29,6 +29,11 @@
               <button v-if="!rental.hasReview" @click="openReviewModal(rental)" class="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm w-full">
                 Leave Review</button>
             </div>
+            <div v-if="rental.status === 'Pending'" class="mt-3">
+              <button @click="cancelRequest(rental.id, rental.itemId)" class="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm w-full">
+                Cancel Request
+              </button>
+            </div>
             <router-link :to="`/item/${rental.itemId}`" class="text-blue-500 hover:underline text-sm mt-2 inline-block">View Item</router-link>
           </div>
         </div>
@@ -280,5 +285,38 @@ const deleteItem= async(itemId)=> {//delete func to allow for delisting of items
   lentItems.value = lentItems.value.filter(item => item.id!==itemId)
   alert('Item deleted from Browse Page!')
 }
+
+// Allow borrower to cancel their pending rental request
+const cancelRequest = async (rentalId, itemId) => {
+  if (!confirm('Are you sure you want to cancel this rental request?')) return
+  try {
+    // mark rental as cancelled
+    await updateDoc(doc(db, 'rentals', rentalId), {
+      status: 'Cancelled',
+      cancelledAt: serverTimestamp()
+    })
+
+    // make sure listing is available again
+    if (itemId) {
+      await updateDoc(doc(db, 'listings', itemId), {
+        status: 'Available',
+        currentRenterId: null,
+        currentRentalId: null,
+        lastCancelledAt: serverTimestamp()
+      })
+    }
+
+    // update UI state
+    borrowedItems.value = borrowedItems.value.map(r =>
+      r.id === rentalId ? { ...r, status: 'Cancelled' } : r
+    )
+
+    alert('Rental request cancelled.')
+  } catch (err) {
+    console.error('Error cancelling rental request:', err)
+    alert('Unable to cancel request. Please try again.')
+  }
+}
+
 onMounted(fetchRentals)
 </script>

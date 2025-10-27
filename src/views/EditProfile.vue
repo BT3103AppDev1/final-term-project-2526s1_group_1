@@ -160,57 +160,6 @@
                 ></textarea>
               </div>
 
-              <!-- Social Media Links -->
-              <div class="space-y-4">
-                <h3 class="text-lg font-semibold text-slate-900">Social Media</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <div class="h-5 w-5 rounded bg-blue-600 flex items-center justify-center">
-                        <span class="text-white text-xs font-bold">in</span>
-                      </div>
-                      LinkedIn
-                    </label>
-                    <input
-                      v-model="formData.linkedin"
-                      type="url"
-                      class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm transition-all"
-                      placeholder="https://linkedin.com/in/username"
-                    />
-                  </div>
-                  
-                  <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <div class="h-5 w-5 rounded bg-pink-600 flex items-center justify-center">
-                        <span class="text-white text-xs font-bold">@</span>
-                      </div>
-                      Instagram
-                    </label>
-                    <input
-                      v-model="formData.instagram"
-                      type="url"
-                      class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm transition-all"
-                      placeholder="https://instagram.com/username"
-                    />
-                  </div>
-                  
-                  <div class="space-y-2">
-                    <label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      <div class="h-5 w-5 rounded bg-blue-500 flex items-center justify-center">
-                        <span class="text-white text-xs font-bold">T</span>
-                      </div>
-                      Telegram
-                    </label>
-                    <input
-                      v-model="formData.telegram"
-                      type="url"
-                      class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm transition-all"
-                      placeholder="https://t.me/username"
-                    />
-                  </div>
-                </div>
-              </div>
-
               <!-- Action Buttons -->
               <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-slate-200">
                 <Button
