@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-    <!-- Back to Browse Button -->
+    <!--Back to Browse Button-->
     <div class="container mx-auto px-10 pt-4 pb-2">
       <Button variant="ghost" size="sm" as-child class="border border-gray-600 mb-4">
         <router-link to="/browse" class="flex items-center font-bold">
@@ -8,7 +8,6 @@
         </router-link>
       </Button>
     </div>
-
     <!-- Loading State -->
     <div v-if="loading" class="container mx-auto px-4 py-12">
       <div class="flex flex-col items-center justify-center min-h-[400px]">
@@ -16,19 +15,15 @@
         <p class="text-slate-600 text-lg">Loading item details...</p>
       </div>
     </div>
-
     <!-- Item Detail Content -->
     <div v-else-if="item" class="container mx-auto px-4 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content -->
         <div class="lg:col-span-2 space-y-8">
           <!-- Image Gallery -->
           <Card class="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
             <CardContent class="p-0">
               <div class="relative group">
-                <img
-                  :src="item.images[selectedImageIndex]"
-                  :alt="item.title"
+                <img :src="item.images[selectedImageIndex]" :alt="item.title"
                   class="w-full h-96 sm:h-[500px] object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
@@ -37,11 +32,7 @@
               <!-- Thumbnail Gallery -->
               <div class="p-6">
                 <div class="flex gap-3 overflow-x-auto">
-                  <img
-                    v-for="(image, index) in item.images"
-                    :key="index"
-                    :src="image"
-                    :alt="`${item.title} ${index + 1}`"
+                  <img v-for="(image, index) in item.images" :key="index" :src="image" :alt="`${item.title} ${index + 1}`"
                     class="w-20 h-16 object-cover rounded-lg cursor-pointer transition-all"
                     :class="selectedImageIndex === index ? 'ring-2 ring-blue-500' : 'hover:ring-2 hover:ring-blue-300'"
                     @click="selectedImageIndex = index"
@@ -239,16 +230,9 @@ const loading = ref(true)
 const selectedImageIndex = ref(0)
 const isSaved = ref(false)
 const error = ref(null)
-
-// Methods
 const getInitials = (name) => {
   return name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'
 }
-
-const toggleSave = () => {
-  isSaved.value = !isSaved.value
-}
-
 const requestRental = () => {
   console.log('Requesting rental for:', item.value.title)
   router.push(`/request-rental/${item.value.id}`)
@@ -261,46 +245,34 @@ const sendMessage = async () => {
     router.push('/login')
     return
   }
-
   // Check if user is trying to message themselves
   if (auth.currentUser.uid === item.value.owner.id) {
     alert('You cannot message yourself!')
     return
   }
-
   try {
-    // Create or find existing conversation
     const conversationId = await createConversation(
       item.value.owner.id,
       JSON.parse(JSON.stringify(item.value))
     )
-
-
-
     // Show success message
     alert(`Conversation started! You can now message ${item.value.owner.name} about "${item.value.title}".`)
-    
     // Redirect to messages page
     router.push({ 
         name: 'messages', 
         query: { chatId: conversationId } 
       })
-
   } catch (error) {
     console.error('Error creating conversation:', error)
     alert('Failed to start conversation. Please try again.')
   }
 }
 
-// Fetch item data from Firebase
 const fetchItemData = async (itemId) => {
   try {
     loading.value = true
     error.value = null
-    
-    console.log('Fetching item with ID:', itemId)
-    
-    // Fetch item from Firebase
+    //fetch from Firebase
     const itemDoc = doc(db, 'listings', itemId)
     const itemSnap = await getDoc(itemDoc)
     
@@ -371,10 +343,8 @@ const ownerReviewCount = ref(0)
 onMounted(async () => {
   const itemId = route.params.id
   console.log('ItemDetailPage mounted with ID:', itemId)
-  
   if (itemId) {
     await fetchItemData(itemId)
-
     if (item.value?.owner?.id) {
       const { average, total } = await getUserAverageRating(item.value.owner.id)
       ownerRating.value = average
@@ -385,5 +355,4 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
 </script>

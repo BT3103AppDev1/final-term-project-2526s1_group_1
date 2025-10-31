@@ -50,7 +50,3 @@
 <script setup>
 import AuthTabs from '@/components/AuthTabs.vue'
 </script>
-
-<style scoped>
-/* Add any custom styles here */
-</style>

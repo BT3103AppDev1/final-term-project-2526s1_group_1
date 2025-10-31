@@ -413,7 +413,7 @@ const handleSendMessage = async () => {
 </script>
 
 <style scoped>
-/* Custom scrollbar for messages */
+/*Custom scrollbar for msg*/
 .overflow-y-auto::-webkit-scrollbar {
   width: 4px;
 }

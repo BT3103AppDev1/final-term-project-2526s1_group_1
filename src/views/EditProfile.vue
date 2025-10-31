@@ -196,12 +196,10 @@ import { db, storage } from '@/firebase/config'
 import { ArrowLeft, Camera } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
 import { Card, CardContent } from '@/components/ui/Card.vue'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar.vue'
 import { useUserProfile } from '@/composables/useUserProfile'
 
 const router = useRouter()
 const { user, loading, loadUserProfile } = useUserProfile()
-
 const saving = ref(false)
 const fileInput = ref(null)
 const avatarTimestamp = ref(Date.now())
@@ -304,7 +302,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Additional custom styles if needed */
 .gradient-border {
   background: linear-gradient(white, white) padding-box,
               linear-gradient(to right, #3b82f6, #8b5cf6) border-box;

@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 flex">
-    <!-- Left Side - Branding -->
+    <!-- Left Side Branding -->
     <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-500 to-amber-600 p-12 flex-col justify-between relative overflow-hidden">
       <!-- Background Pattern -->
       <div class="absolute inset-0 opacity-10">
@@ -8,8 +8,6 @@
         <div class="absolute bottom-32 right-16 w-24 h-24 bg-white rounded-full"></div>
         <div class="absolute top-1/2 left-1/3 w-16 h-16 bg-white rounded-full"></div>
       </div>
-      
-      <!-- Logo and Branding -->
       <div class="relative z-10">
         <!-- Logo and Title -->
         <div class="flex items-center gap-3 mb-8">
@@ -62,7 +60,6 @@
             PeerSwap
           </h1>
         </div>
-
         <!-- Auth Card -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
           <!-- Header -->
@@ -70,35 +67,17 @@
             <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{{ getTitle() }}</h2>
             <p class="text-gray-600">{{ getSubtitle() }}</p>
           </div>
-
           <!-- Form Content -->
           <div class="space-y-6">
             <!-- Login Form -->
-            <LoginForm 
-              v-if="currentView === 'login'"
-              @changeToRegister="currentView = 'register'"
-              @changeToReset="currentView = 'reset'"
-              @loginSuccess="handleAuthSuccess"
-            />
-
+            <LoginForm v-if="currentView === 'login'" @changeToRegister="currentView = 'register'"
+              @changeToReset="currentView = 'reset'" @loginSuccess="handleAuthSuccess"/>
             <!-- Register Form -->
-            <RegisterForm 
-              v-else-if="currentView === 'register'"
-              @changeToLogin="currentView = 'login'"
-              @registerSuccess="handleAuthSuccess"
-            />
-
+            <RegisterForm v-else-if="currentView === 'register'" @changeToLogin="currentView = 'login'"
+              @registerSuccess="handleAuthSuccess"/>
             <!-- Reset Password Form -->
-            <ResetPasswordForm 
-              v-else-if="currentView === 'reset'"
-              @changeStateToLogin="currentView = 'login'"
-            />
-
-            <!-- AuthForm (Combined Form) -->
-            <AuthForm 
-              v-else-if="currentView === 'auth'"
-              @authSuccess="handleAuthSuccess"
-            />
+            <ResetPasswordForm v-else-if="currentView === 'reset'" @changeStateToLogin="currentView = 'login'"/>
+            <AuthForm v-else-if="currentView === 'auth'" @authSuccess="handleAuthSuccess"/>
           </div>
 
           <!-- Footer Links -->
@@ -137,11 +116,8 @@ import LoginForm from '@/components/forms/LoginForm.vue';
 import RegisterForm from '@/components/forms/RegisterForm.vue';
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm.vue';
 import AuthForm from '@/components/forms/AuthForm.vue';
-
-// Router
 const route = useRoute();
 const router = useRouter();
-
 // Props
 const props = defineProps({
   defaultView: {
@@ -151,10 +127,8 @@ const props = defineProps({
   }
 });
 
-// Reactive data
 const currentView = ref(props.defaultView);
 
-// Methods
 const getTitle = () => {
   switch (currentView.value) {
     case 'login':
@@ -187,7 +161,6 @@ const getSubtitle = () => {
 
 const handleAuthSuccess = (user) => {
   console.log('Authentication successful:', user);
-  
   // Redirect based on route query or default to dashboard
   const redirectTo = route.query.redirect || '/dashboard';
   router.push(redirectTo);
@@ -203,17 +176,13 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom animations for the branding side */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
-
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
-
-/* Smooth transitions for form switching */
 .auth-form-enter-active,
 .auth-form-leave-active {
   transition: all 0.3s ease;
@@ -223,7 +192,6 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(10px);
 }
-
 .auth-form-leave-to {
   opacity: 0;
   transform: translateX(-10px);

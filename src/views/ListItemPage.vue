@@ -123,22 +123,11 @@
                   <Upload class="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 class="text-lg font-semibold text-slate-900 mb-2">Upload Photos</h3>
-                <p class="text-slate-600 mb-4 max-w-sm">Drag and drop your images here, or click the button below to browse files</p>
-                <input
-                  ref="fileInput"
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  @change="handleFileSelect"
-                  class="hidden"
-                  id="image-upload"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  class="border-blue-300 text-blue-700 hover:bg-blue-50"
-                  @click="$refs.fileInput.click()"
-                >
+                <p class="text-slate-600 mb-4 max-w-sm">Click the button below to browse & upload images</p>
+                <input ref="fileInput" type="file" multiple accept="image/*"
+                  @change="handleFileSelect" class="hidden" id="image-upload"/>
+                <Button type="button" variant="outline"
+                  class="border-blue-300 text-blue-700 hover:bg-blue-50" @click="$refs.fileInput.click()">
                   <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                   </svg>
@@ -156,14 +145,10 @@
                   :key="index"
                   class="relative group"
                 >
-                  <img
-                    :src="image"
-                    :alt="`Upload ${index + 1}`"
+                  <img :src="image" :alt="`Upload ${index + 1}`"
                     class="w-full h-32 object-cover rounded-xl shadow-md"
                   />
-                  <Button
-                    type="button"
-                    size="sm"
+                  <Button type="button" size="sm"
                     class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                     @click="removeImage(index)"
                   >
@@ -200,16 +185,10 @@
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <span class="text-slate-500 text-lg font-medium">$</span>
                     </div>
-                    <Input
-                      id="price"
-                      v-model.number="formData.price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
+                    <Input id="price" v-model.number="formData.price" type="number"
+                      step="0.01" min="0" placeholder="0.00"
                       class="pl-10 h-12 text-lg font-medium border-slate-300 focus:border-green-500 focus:ring-green-500/20 bg-white/70 backdrop-blur-sm"
-                      required
-                    />
+                      required/>
                   </div>
                 </div>
 
@@ -271,9 +250,6 @@
                   class="min-h-[100px] border-slate-300 focus:border-purple-500 focus:ring-purple-500/20 bg-white/70 backdrop-blur-sm resize-none"
                   :rows="4"
                 />
-                <p class="text-xs text-slate-500 bg-purple-50 rounded-lg p-2 border border-purple-200">
-                  💬 Include any special instructions or time preferences for pickup/return
-                </p>
               </div>
             </div>
           </div>
@@ -304,9 +280,6 @@
                 </span>
               </Button>
             </div>
-            <p class="text-xs text-slate-500 text-center mt-4 bg-slate-50 rounded-lg p-3 border border-slate-200">
-              💡 <strong>Tip:</strong> Save as draft to continue editing later, or publish to make your item available for rent immediately
-            </p>
           </div>
         </section>
       </form>
@@ -315,7 +288,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref,reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { Upload, X, DollarSign } from 'lucide-vue-next'
 import Button from '@/components/ui/button.vue'
@@ -335,14 +308,11 @@ import { useListings } from '@/composables/useListings'
 
 const router = useRouter()
 const { createListing, loading } = useListings()
-
-// State
 const images = ref([]) // Preview URLs for display
 const imageFiles = ref([]) // Actual File objects for Firebase
 const dragActive = ref(false)
 const fileInput = ref(null)
-
-// Form data
+//Form data
 const formData = reactive({
   title: '',
   category: '',
@@ -353,8 +323,6 @@ const formData = reactive({
   location: '',
   availabilityNotes: ''
 })
-
-// Methods
 const handleFileSelect = (event) => {
   const files = event.target.files
   handleImageUpload(files)
@@ -370,21 +338,18 @@ const handleImageUpload = (files) => {
   if (files) {
     const remainingSlots = 5 - images.value.length
     const filesToAdd = Array.from(files).slice(0, remainingSlots)
-    
-    // Store the actual File objects for Firebase upload
+    //Store actual File objects for Firebase upload
     imageFiles.value = [...imageFiles.value, ...filesToAdd]
     
-    // Create preview URLs for display
+    //preview URLs for display
     const newPreviews = filesToAdd.map(file => URL.createObjectURL(file))
     images.value = [...images.value, ...newPreviews]
   }
 }
 
 const removeImage = (index) => {
-  // Clean up the preview URL to prevent memory leaks
+  //Clean up preview URL
   URL.revokeObjectURL(images.value[index])
-  
-  // Remove from both arrays
   images.value = images.value.filter((_, i) => i !== index)
   imageFiles.value = imageFiles.value.filter((_, i) => i !== index)
 }
@@ -392,8 +357,6 @@ const removeImage = (index) => {
 const saveAsDraft = async () => {
   try {
     console.log('Saving as draft...', formData)
-    // TODO: Implement save as draft functionality
-    // You can create a similar function in useListings.js for drafts
     alert('Item saved as draft!')
   } catch (error) {
     console.error('Error saving draft:', error)
@@ -407,27 +370,19 @@ const handleSubmit = async () => {
     alert('Please upload at least one image')
     return
   }
-
-  // Validate required fields
   if (!formData.title || !formData.category || !formData.condition || 
       !formData.description || !formData.price || !formData.location) {
     alert('Please fill in all required fields')
     return
   }
-
-  // Validate price is positive
   if (formData.price <= 0) {
     alert('Price must be greater than 0')
     return
   }
-
   try {
     console.log('Publishing item...', formData, imageFiles.value)
-    
-    // Use the composable to create listing in Firebase
+    //create listing in Firebase
     const listingId = await createListing(formData, imageFiles.value)
-    
-    // Success! Navigate to the new item page
     alert('Item published successfully!')
     router.push(`/item/${listingId}`)
   } catch (error) {
@@ -436,7 +391,3 @@ const handleSubmit = async () => {
   }
 }
 </script>
-
-<style scoped>
-/* Add any custom styles here */
-</style>

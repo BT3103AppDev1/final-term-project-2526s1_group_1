@@ -1,21 +1,16 @@
 <template>
   <div class="relative inline-block w-full">
-    <!-- Trigger -->
-    <button
-      ref="triggerRef"
-      type="button"
+    <button ref="triggerRef" type="button"
       class="flex w-full items-center justify-between rounded-lg border-2 border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       :class="{ 'border-blue-500 ring-2 ring-blue-200': open }"
       @click="toggleDropdown"
     >
-      <span :class="{ 'text-slate-400': !selectedLabel }">{{ selectedLabel || placeholder }}</span>
-      <ChevronDown
-        class="h-5 w-5 text-slate-500 transition-transform duration-200"
-        :class="{ 'rotate-180 text-blue-500': open }"
-      />
+      <span :class="{ 'text-slate-400': !selectedLabel }">{{ selectedLabel||placeholder }}</span>
+      <ChevronDown class="h-5 w-5 text-slate-500 transition-transform duration-200"
+        :class="{ 'rotate-180 text-blue-500': open }"/>
     </button>
 
-    <!-- Dropdown (Teleported to body to fix z-index/overflow issues) -->
+    <!-- Dropdown panel-->
     <Teleport to="body">
       <transition
         enter-active-class="transition duration-150 ease-out"
@@ -47,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref,computed,onMounted,onBeforeUnmount,nextTick } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 import { onClickOutside } from '@vueuse/core'
 
@@ -85,7 +80,6 @@ function updateDropdownPosition() {
     const viewportHeight = window.innerHeight
     const spaceBelow = viewportHeight - rect.bottom
     const spaceAbove = rect.top
-
     const dropdownHeight = 240 // ~max-h-60
     const openUpward = spaceBelow < dropdownHeight && spaceAbove > spaceBelow
 
@@ -125,13 +119,11 @@ function handleEscape(e) {
 function handleReposition() {
   if (open.value) updateDropdownPosition()
 }
-
 onMounted(() => {
   window.addEventListener('keydown', handleEscape)
   window.addEventListener('scroll', handleReposition, true)
   window.addEventListener('resize', handleReposition)
 })
-
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleEscape)
   window.removeEventListener('scroll', handleReposition, true)
