@@ -39,12 +39,6 @@
           </div>
           <span class="font-medium">Secure messaging & transactions</span>
         </div>
-        <div class="flex items-center gap-3 text-white">
-          <div class="w-8 h-8 bg-white bg-opacity-30 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white border-opacity-20">
-            <span class="text-black text-lg font-bold">✓</span>
-          </div>
-          <span class="font-medium">Save up to 70% on textbooks</span>
-        </div>
       </div>
     </div>
 

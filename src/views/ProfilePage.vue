@@ -83,10 +83,6 @@
                     <span class="text-slate-600">Member since</span>
                     <span class="font-semibold text-slate-900">{{ user.joinedDate }}</span>
                   </div>
-                  <div class="flex justify-between items-center">
-                    <span class="text-slate-600">Total rentals</span>
-                    <span class="font-semibold text-slate-900">{{ user.totalRentals || 0 }}</span>
-                  </div>
                 </div>
               </div>
               <!-- Action Buttons -->
