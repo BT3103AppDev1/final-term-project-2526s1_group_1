@@ -124,6 +124,7 @@
             </CardHeader>
             <CardContent class="space-y-4">
               <Button
+                v-if="!isOwner"
                 class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 size="lg"
                 :disabled="!item.available || item.status === 'Rented'"
@@ -132,10 +133,21 @@
                 {{ item.available && item.status !== 'Rented' ? 'Request Rental' : 'Not Available' }}
               </Button>
               
-              <Button variant="outline" class="w-full" size="lg" @click="sendMessage">
+              <Button 
+                v-if="!isOwner"
+                variant="outline" 
+                class="w-full" 
+                size="lg" 
+                @click="sendMessage"
+              >
                 <MessageCircle class="h-5 w-5 mr-2" />
                 Message Owner
               </Button>
+
+              <div v-if="isOwner" class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                <p class="text-blue-700 font-medium">This is your listing</p>
+                <p class="text-sm text-blue-600 mt-1">You can manage this item from your Rentals page</p>
+              </div>
             </CardContent>
           </Card>
           <!-- Owner Card -->
@@ -208,7 +220,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { doc, getDoc } from 'firebase/firestore'
 import { db, auth } from '@/firebase.js'
@@ -239,6 +251,11 @@ const loading = ref(true)
 const selectedImageIndex = ref(0)
 const isSaved = ref(false)
 const error = ref(null)
+
+// Computed property to check if current user is the owner
+const isOwner = computed(() => {
+  return auth.currentUser && item.value && auth.currentUser.uid === item.value.owner.id
+})
 
 // Methods
 const getInitials = (name) => {

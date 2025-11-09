@@ -222,10 +222,25 @@ const handleSubmitRequest = async () => {
 }
 onMounted(async () => {//get itemdetails from firestore
   try {
+    const user = auth.currentUser
+    if (!user) {
+      alert('Please login to request a rental.')
+      router.push('/login')
+      return
+    }
+
     const docRef = doc(db, 'listings', itemId)
     const docSnap = await getDoc(docRef)
     if (docSnap.exists()) {
       const data = docSnap.data()
+      
+      // Check if user is trying to rent their own item
+      if (data.ownerId === user.uid) {
+        alert('You cannot request a rental for your own item.')
+        router.push(`/item/${itemId}`)
+        return
+      }
+
       item.value = {id: docSnap.id, title: data.title, description: data.description,
         price: data.price, period: data.period, category: data.category,
         condition: data.condition,image: data.images && data.images.length > 0 ? data.images[0]:'/placeholder.jpg',

@@ -45,16 +45,6 @@
                 Sign In
               </router-link>
             </div>
-
-            <!-- Browse without account -->
-            <div class="text-left">
-              <router-link 
-                to="/browse"
-                class="text-gray-600 hover:text-orange-600 font-medium underline decoration-2 underline-offset-4 hover:decoration-orange-600 transition-colors"
-              >
-                Browse items without an account
-              </router-link>
-            </div>
           </div>
 
           <!-- Right Visual Content -->

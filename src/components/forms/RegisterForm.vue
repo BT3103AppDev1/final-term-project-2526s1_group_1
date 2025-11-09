@@ -56,7 +56,7 @@ const password = ref('')
 const router = useRouter()
 const auth = getAuth()
 
-const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'u.nus.edu']
+const allowedDomains = ['gmail.com', 'u.nus.edu']
 function isSchoolEmail(email) {
   if(!email) return false
   const parts = email.toLowerCase().split('@')

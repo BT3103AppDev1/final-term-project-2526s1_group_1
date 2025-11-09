@@ -14,29 +14,14 @@
 
     <div>
       <label for="login-password" class="block text-sm font-medium mb-1">Password</label>
-      <div class="relative">
-        <input
-          id="login-password"
-          v-model="password"
-          :type="showPassword ? 'text' : 'password'"
-          placeholder="••••••••"
-          class="w-full rounded-md border border-input px-3 py-2 pr-10 text-sm bg-background"
-          required
-        />
-        <button
-          type="button"
-          @click="togglePassword"
-          class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-        >
-          <svg v-if="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-          </svg>
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/>
-          </svg>
-        </button>
-      </div>
+      <input
+        id="login-password"
+        v-model="password"
+        type="password"
+        placeholder="••••••••"
+        class="w-full rounded-md border border-input px-3 py-2 text-sm bg-background"
+        required
+      />
     </div>
 
     <button
@@ -76,7 +61,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth'
 
 const email = ref('')
 const password = ref('')
@@ -84,6 +69,9 @@ const loading = ref(false)
 const showPassword = ref(false)
 const router = useRouter()
 const auth = getAuth()
+
+// Emails that should bypass verification and stay signed in
+const bypassVerificationEmails = ['testuser@test.com']
 
 // Define emits
 const emit = defineEmits(['changeToRegister', 'changeToReset', 'loginSuccess'])
@@ -104,8 +92,10 @@ async function loginUser() {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value)
     const user = userCredential.user
+    const emailLower = (email.value || '').toLowerCase()
 
-    if (!user.emailVerified) {
+    // If user is not verified and NOT in bypass list, resend verification and prevent login
+    if (!user.emailVerified && !bypassVerificationEmails.includes(emailLower)) {
       try {
         // resend verification email
         await sendEmailVerification(user)
@@ -117,6 +107,8 @@ async function loginUser() {
       alert('Email not verified. A verification email has been (re)sent — please verify before logging in.')
       return
     }
+
+    // If user is unverified but in bypass list, allow login
     // Emit login success event
     emit('loginSuccess', user)
     router.push('/browse')
