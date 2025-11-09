@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
     <!-- Enhanced Messages Layout -->
-    <div class="container mx-auto px-4 py-6 h-screen">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+    <div class="container mx-auto px-4 py-6 max-h-screen h-screen flex flex-col">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         
         <!-- Enhanced Conversations List -->
         <div class="lg:col-span-1">
@@ -87,8 +87,8 @@
         </div>
 
         <!-- Enhanced Chat Area -->
-        <div class="lg:col-span-2">
-          <Card v-if="selectedConversation" class="h-full flex flex-col border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
+        <div class="lg:col-span-2 min-h-0">
+          <Card v-if="selectedConversation" class="h-full flex flex-col border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden min-h-0">
             <div class="absolute inset-0 bg-gradient-to-br from-slate-50 to-blue-50 opacity-30"></div>
             
             <!-- Enhanced Chat Header -->
@@ -145,8 +145,8 @@
             </CardHeader>
 
             <!-- Enhanced Messages -->
-            <CardContent ref="messagesContainer" class="flex-1 p-6 overflow-y-auto relative space-y-4">
-              <div class="space-y-6">
+            <CardContent ref="messagesContainer" class="flex-1 p-6 overflow-y-auto relative">
+              <div class="space-y-6 min-h-0">
                 <div
                   v-for="message in messages"
                   :key="message.id"

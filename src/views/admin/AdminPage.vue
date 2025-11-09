@@ -81,17 +81,17 @@
             class="pl-8"
           />
         </div>
-        <Select v-model="filterStatus">
-          <SelectTrigger class="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="suspended">Suspended</SelectItem>
-          </SelectContent>
-        </Select>
+        <CustomSelect 
+          v-model="filterStatus"
+          :options="[
+            { value: 'all', label: 'All Status' },
+            { value: 'active', label: 'Active' },
+            { value: 'pending', label: 'Pending' },
+            { value: 'suspended', label: 'Suspended' }
+          ]"
+          placeholder="Filter by status"
+          class="w-[180px]"
+        />
         <Button variant="outline">
           <Filter class="mr-2 h-4 w-4" />
           More Filters
@@ -128,22 +128,16 @@ import {
   CardContent,
   CardHeader,
   CardTitle
-} from '@/components/ui/card'
+} from '@/components/ui/Card.vue'
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger
-} from '@/components/ui/tabs'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/tabs.vue'
+import CustomSelect from '@/components/ui/select.vue'
+import Input from '@/components/ui/input.vue'
+import Button from '@/components/ui/button.vue'
 import AdminUserTable from '@/components/admin/AdminUserTable.vue'
 import AdminItemTable from '@/components/admin/AdminItemTable.vue'
 import AdminTransactionTable from '@/components/admin/AdminTransactionTable.vue'

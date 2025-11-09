@@ -336,8 +336,7 @@ const quickFilters = ref([
   { id: 'equipment', name: 'Equipment', icon: '🔧' },
   { id: 'furniture', name: 'Furniture', icon: '🪑' },
   { id: 'clothing', name: 'Clothing', icon: '👕' },
-  { id: 'sports', name: 'Sports', icon: '⚽' },
-  { id: 'other', name: 'Other', icon: '📦' }
+  { id: 'supplies', name: 'Supplies', icon: '📝' },
 ])
 
 // Fetch items from Firebase

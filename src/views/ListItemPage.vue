@@ -282,21 +282,10 @@
         <!-- Enhanced Submit Section -->
         <section class="space-y-6 pt-4 border-t border-slate-200">
           <div class="bg-gradient-to-br from-white to-slate-50 rounded-2xl border border-slate-200 p-6 shadow-lg backdrop-blur-sm">
-            <div class="flex flex-col sm:flex-row gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                class="flex-1 h-14 text-base font-medium border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 transition-all duration-200 bg-white/70 backdrop-blur-sm"
-                @click="saveAsDraft"
-                :disabled="loading"
-              >
-                <span class="flex items-center gap-2">
-                  📝 Save as Draft
-                </span>
-              </Button>
+            <div class="flex justify-center">
               <Button 
                 type="submit" 
-                class="flex-1 h-14 text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                class="w-full sm:w-auto min-w-[300px] h-14 text-base font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 border-0"
                 :disabled="loading"
               >
                 <span class="flex items-center gap-2">
@@ -304,9 +293,6 @@
                 </span>
               </Button>
             </div>
-            <p class="text-xs text-slate-500 text-center mt-4 bg-slate-50 rounded-lg p-3 border border-slate-200">
-              💡 <strong>Tip:</strong> Save as draft to continue editing later, or publish to make your item available for rent immediately
-            </p>
           </div>
         </section>
       </form>
